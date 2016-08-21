@@ -57,7 +57,7 @@
 		configprefix:'noname_0.9_',
         versionOL:13,
 		updateURL:localStorage.getItem('noname_update_url')||'http://websha.cn/',
-        devURL:'https://rawgit.com/operawidget/unamed/master/',
+        devURL:'https://rawgit.com/operawidget/unnamed/master/',
 		assetURL:'',
         hallURL:'websha.cn',
         reserveSkillName:['others','zhu','zhuSkill'],
