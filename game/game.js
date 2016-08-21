@@ -10088,12 +10088,13 @@
 					this.removeSkill('mad');
 				},
                 addExpose:function(num){
-                    if(typeof this.ai.shown=='number'&&!this.identityShown){
+                    if(typeof this.ai.shown=='number'&&!this.identityShown&&this.ai.shown<1){
                         this.ai.shown+=num;
-                        if(this.ai.shown>1){
-                            this.ai.shown=1;
+                        if(this.ai.shown>0.95){
+                            this.ai.shown=0.95;
                         }
                     }
+                    return this;
                 },
 				equip:function(card){
 					var next=game.createEvent('equip');
@@ -10990,6 +10991,53 @@
 						}
 					},time)
 				},
+                getEnemies:function(func){
+                    var player=this;
+                    var targets;
+                    var mode=get.mode();
+                    if(mode=='identity'){
+                        var num=get.population('fan');
+                        switch(player.identity){
+                            case 'zhu':case 'zhong':case 'mingzhong':targets=game.filterPlayer(function(target){
+                                if(func&&!func(target)) return false;
+                                if(num>=3) return target.identity=='fan';
+                                return target.identity=='nei'||target.identity=='fan';
+                            });break;
+                            case 'nei':targets=game.filterPlayer(function(target){
+                                if(func&&!func(target)) return false;
+                                if(num>=3) return target.identity=='fan';
+                                return target.identity=='zhong'||target.identity=='mingzhong'||target.identity=='fan';
+                            });break;
+                            case 'fan':targets=game.filterPlayer(function(target){
+                                if(func&&!func(target)) return false;
+                                return target.identity!='fan';
+                            });break;
+                        }
+                    }
+                    else if(mode=='guozhan'){
+                        if(player.identity=='ye'){
+                            targets=game.filterPlayer(function(target){
+                                if(func&&!func(target)) return false;
+                                return true;
+                            });
+                        }
+                        else{
+                            var group=lib.character[player.name1][1];
+                            targets=game.filterPlayer(function(target){
+                                if(func&&!func(target)) return false;
+                                return lib.character[target.name1][1]!=group;
+                            });
+                        }
+                    }
+                    else{
+                        targets=game.filterPlayer(function(target){
+                            if(func&&!func(target)) return false;
+                            return target.side!=player.side;
+                        });
+                    }
+                    targets.remove(player);
+                    return targets;
+                },
 				isEnemyOf:function(){
 					return !this.isFriendOf.apply(this,arguments);
 				},

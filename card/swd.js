@@ -3010,7 +3010,7 @@ card.swd={
 			},
 			ai:{
 				order:function(card,player){
-					if(player.num('h',{type:'hslingjian'})) return 10;
+					if(player.num('h',{type:'hslingjian'})) return 8.5;
 					return 1;
 				},
 				result:{

@@ -3852,7 +3852,7 @@ character.hearth={
 			trigger:{source:'damageBegin'},
 			forced:true,
 			filter:function(event){
-				return event.card&&get.type(event.card)=='trick'&&event.parent.name!='_lianhuan'&&event.parent.name!='_lianhuan2';
+				return event.card&&get.type(event.card)=='trick'&&event.notLink();
 			},
 			content:function(){
 				trigger.num++;
@@ -3879,7 +3879,7 @@ character.hearth={
 			trigger:{source:'damageBegin'},
 			forced:true,
 			filter:function(event){
-				return event.card&&event.card.name=='sha'&&event.parent.name!='_lianhuan'&&event.parent.name!='_lianhuan2';
+				return event.card&&event.card.name=='sha'&&event.notLink();
 			},
 			content:function(){
 				trigger.num++;

@@ -17,7 +17,7 @@ character.ow={
         ow_maikelei:['male','shu',4,['shanguang','tiandan','shenqiang']],
         ow_kuangshu:['male','shu',3,['liudan','shoujia','shihuo']],
 
-        // ow_tuobiang:['male','shu',3,[]],
+        ow_tuobiang:['male','shu',3,['paotai','maoding']],
         // ow_baolei:['female','shu',3,[]],
         ow_banzang:['male','qun',4,['fengshi','yinbo']],
         // ow_laiyinhate:['male','shu',4,[]],
@@ -26,6 +26,108 @@ character.ow={
         // ow_zhaliya:['female','shu',4,[]],
     },
     skill:{
+        maoding:{
+            trigger:{player:'damageEnd',source:'damageEnd'},
+            frequent:true,
+            content:function(){
+                player.gain(game.createCard(get.typeCard('hslingjian').randomGet()),'gain2');
+            },
+            group:'maoding2'
+        },
+        maoding2:{
+            enable:'phaseUse',
+            filter:function(event,player){
+                return player.num('h',{type:'hslingjian'})>1;
+            },
+            filterCard:{type:'hslingjian'},
+            filterTarget:true,
+            selectCard:2,
+            usable:1,
+            content:function(){
+                target.changeHujia();
+            },
+            ai:{
+				order:9,
+				result:{
+					target:function(player,target){
+						return 2/Math.max(1,Math.sqrt(target.hp));
+					},
+				},
+			}
+        },
+        paotai:{
+            enable:'phaseUse',
+            intro:{
+                content:function(storage){
+                    var num;
+                    switch(storage){
+                        case 1:num=30;break;
+                        case 2:num=60;break;
+                        case 3:num=100;break;
+                    }
+                    return '回合结束阶段，有'+num+'%机率对一名随机敌人造成一点火焰伤害';
+                }
+            },
+            init:function(player){
+                player.storage.paotai=0;
+            },
+            filter:function(event,player){
+                return player.num('h','sha')>0&&player.storage.paotai<3;
+            },
+            filterCard:{name:'sha'},
+            content:function(){
+                player.storage.paotai++;
+                player.markSkill('paotai');
+            },
+            ai:{
+                order:5,
+                threaten:1.5,
+                result:{
+                    player:1
+                }
+            },
+            group:['paotai2','paotai3']
+        },
+        paotai2:{
+            trigger:{player:'phaseEnd'},
+            forced:true,
+            filter:function(event,player){
+                var num=0;
+                switch(player.storage.paotai){
+                    case 1:num=30;break;
+                    case 2:num=60;break;
+                    case 3:num=100;break;
+                }
+                return 100*Math.random()<num;
+            },
+            content:function(){
+                var targets=player.getEnemies();
+                if(targets.length){
+                    var target=targets.randomGet();
+                    target.addExpose(0.3);
+                    player.addExpose(0.3);
+                    target.damage('fire');
+                    player.line(target,'fire');
+                }
+            }
+        },
+        paotai3:{
+            trigger:{player:'damageEnd'},
+            forced:true,
+            popup:false,
+            filter:function(event,player){
+                return event.card&&event.card.name=='sha'&&player.storage.paotai>0;
+            },
+            content:function(){
+                player.storage.paotai--;
+                if(player.storage.paotai==0){
+                    player.unmarkSkill('paotai');
+                }
+                else{
+                    player.updateMarks();
+                }
+            }
+        },
         fengshi:{
             trigger:{player:'shaBefore'},
             forced:true,
@@ -69,61 +171,16 @@ character.ow={
             },
             content:function(){
                 'step 0'
-                var targets;
-                var mode=get.mode();
-                if(mode=='identity'){
-                    var num=get.population('fan');
-                    switch(player.identity){
-                        case 'zhu':case 'zhong':case 'mingzhong':targets=game.filterPlayer(function(target){
-                            if(!target.num('he')) return false;
-                            if(num>=3) return target.identity=='fan';
-                            return target.identity=='nei'||target.identity=='fan';
-                        });break;
-                        case 'nei':targets=game.filterPlayer(function(target){
-                            if(!target.num('he')) return false;
-                            if(num>=3) return target.identity=='fan';
-                            return target.identity=='zhong'||target.identity=='mingzhong'||target.identity=='fan';
-                        });break;
-                        case 'fan':targets=game.filterPlayer(function(target){
-                            if(!target.num('he')) return false;
-                            return target.identity!='fan';
-                        });break;
-                    }
-                }
-                else if(mode=='guozhan'){
-                    if(player.identity=='ye'){
-                        targets=game.filterPlayer(function(target){
-                            if(!target.num('he')) return false;
-                            return true;
-                        });
-                    }
-                    else{
-                        var group=lib.character[player.name1][1];
-                        targets=game.filterPlayer(function(target){
-                            if(!target.num('he')) return false;
-                            return lib.character[target.name1][1]!=group;
-                        });
-                    }
-                }
-                else{
-                    targets=game.filterPlayer(function(target){
-                        if(!target.num('he')) return false;
-                        return target.side!=player.side;
-                    });
-                }
-                targets.remove(player);
+                var targets=player.getEnemies(function(target){
+                    return target.num('he')>0;
+                });
                 if(targets.length){
                     event.targets=targets.randomGets(3);
                     event.targets.sort(lib.sort.seat);
                     player.line(event.targets,'green');
                     if(lib.config.mode=='identity'||lib.config.mode=='guozhan'){
                         for(var i=0;i<event.targets.length;i++){
-                            if(event.targets[i].ai.shown<1){
-                                event.targets[i].ai.shown+=0.3;
-                                if(event.targets[i].ai.shown>0.95){
-                                    event.targets[i].ai.shown=0.95;
-                                }
-                            }
+                            event.targets[i].addExpose(0.3);
                         }
                     }
                 }
@@ -139,7 +196,7 @@ character.ow={
             },
             ai:{
                 order:10,
-                expose:0.2,
+                expose:0.3,
                 result:{
                     player:1
                 }
@@ -2462,6 +2519,12 @@ character.ow={
         }
     },
     translate:{
+        paotai:'炮台',
+        paotai2:'炮台',
+        paotai_info:'出牌阶段，你可以弃置一张杀布置或升级一个炮台（最高3级）；回合结束阶段，炮台有一定机率对一名随机敌人造成一点火焰伤害；每当你受到杀造成的伤害，炮台降低一级',
+        maoding:'铆钉',
+        maoding2:'铆钉',
+        maoding_info:'每当你造成或受到一次伤害，你可以获得一个零件；出牌限阶段限一次，你可以弃置两张零件牌令一名角色获得一点护甲',
         fengshi:'风矢',
         fengshi2:'风矢',
         fengshi_info:'锁定技，你的杀无视距离；你的杀指定目标后有20%的概率失效；你的杀造成伤害后有50%的概率令伤害+1',
