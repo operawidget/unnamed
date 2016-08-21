@@ -432,6 +432,7 @@ card.swd={
 				var list=get.typeCard('hslingjian');
 				var cards=[];
 				var time=0;
+				player.clearEquipTrigger();
 				for(var i=0;i<es.length;i++){
 					if(lib.inpile.contains(es[i].name)){
 						var card=game.createCard(list.randomGet());
@@ -439,9 +440,16 @@ card.swd={
 						time+=200;
 						setTimeout((function(card,name){
 							return function(){
+								ui.discardPile.appendChild(game.createCard(card));
 								card.init([card.suit,card.number,name,card.nature]);
 								card.style.transform='scale(1.1)';
 								card.classList.add('glow');
+								var info=get.info(card);
+			                    if(info.skills){
+			                        for(var i=0;i<info.skills.length;i++){
+			                            player.addSkillTrigger(info.skills[i]);
+			                        }
+			                    }
 								setTimeout(function(){
 									card.style.transform='';
 									card.classList.remove('glow');
