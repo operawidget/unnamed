@@ -19,13 +19,132 @@ character.ow={
 
         // ow_tuobiang:['male','shu',3,[]],
         // ow_baolei:['female','shu',3,[]],
-        // ow_banzang:['male','shu',4,[]],
+        ow_banzang:['male','qun',4,['fengshi','yinbo']],
         // ow_laiyinhate:['male','shu',4,[]],
         // ow_luba:['male','shu',4,[]],
         // ow_wensidun:['male','shu',4,[]],
         // ow_zhaliya:['female','shu',4,[]],
     },
     skill:{
+        fengshi:{
+            trigger:{player:'shaBefore'},
+            forced:true,
+            filter:function(){
+                return Math.random()<0.2;
+            },
+            check:function(){
+                return false;
+            },
+            content:function(){
+                trigger.untrigger();
+                trigger.finish();
+            },
+            mod:{
+                targetInRange:function(card){
+                    if(card.name=='sha') return true;
+                },
+            },
+            group:'fengshi2'
+        },
+        fengshi2:{
+            trigger:{source:'damageBegin'},
+            forced:true,
+            filter:function(event){
+                return event.card&&event.card.name=='sha'&&Math.random()<0.5;
+            },
+            content:function(){
+                trigger.num++;
+            }
+        },
+        yinbo:{
+            enable:'phaseUse',
+            usable:1,
+            filterCard:{suit:'spade'},
+            position:'he',
+            filter:function(event,player){
+                return player.num('he',{suit:'spade'})>0;
+            },
+            check:function(){
+                return 7-ai.get.value(card);
+            },
+            content:function(){
+                'step 0'
+                var targets;
+                var mode=get.mode();
+                if(mode=='identity'){
+                    var num=get.population('fan');
+                    switch(player.identity){
+                        case 'zhu':case 'zhong':case 'mingzhong':targets=game.filterPlayer(function(target){
+                            if(!target.num('he')) return false;
+                            if(num>=3) return target.identity=='fan';
+                            return target.identity=='nei'||target.identity=='fan';
+                        });break;
+                        case 'nei':targets=game.filterPlayer(function(target){
+                            if(!target.num('he')) return false;
+                            if(num>=3) return target.identity=='fan';
+                            return target.identity=='zhong'||target.identity=='mingzhong'||target.identity=='fan';
+                        });break;
+                        case 'fan':targets=game.filterPlayer(function(target){
+                            if(!target.num('he')) return false;
+                            return target.identity!='fan';
+                        });break;
+                    }
+                }
+                else if(mode=='guozhan'){
+                    if(player.identity=='ye'){
+                        targets=game.filterPlayer(function(target){
+                            if(!target.num('he')) return false;
+                            return true;
+                        });
+                    }
+                    else{
+                        var group=lib.character[player.name1][1];
+                        targets=game.filterPlayer(function(target){
+                            if(!target.num('he')) return false;
+                            return lib.character[target.name1][1]!=group;
+                        });
+                    }
+                }
+                else{
+                    targets=game.filterPlayer(function(target){
+                        if(!target.num('he')) return false;
+                        return target.side!=player.side;
+                    });
+                }
+                targets.remove(player);
+                if(targets.length){
+                    event.targets=targets.randomGets(3);
+                    event.targets.sort(lib.sort.seat);
+                    player.line(event.targets,'green');
+                    if(lib.config.mode=='identity'||lib.config.mode=='guozhan'){
+                        for(var i=0;i<event.targets.length;i++){
+                            if(event.targets[i].ai.shown<1){
+                                event.targets[i].ai.shown+=0.3;
+                                if(event.targets[i].ai.shown>0.95){
+                                    event.targets[i].ai.shown=0.95;
+                                }
+                            }
+                        }
+                    }
+                }
+                'step 1'
+                if(event.targets.length){
+                    var target=event.targets.shift();
+                    var he=target.get('he');
+                    if(he.length){
+                        target.discard(he.randomGet());
+                    }
+                    event.redo();
+                }
+            },
+            ai:{
+                order:10,
+                expose:0.2,
+                result:{
+                    player:1
+                }
+            }
+        },
         aqianghua:{
             enable:'phaseUse',
             usable:1,
@@ -2090,9 +2209,9 @@ character.ow={
         guangshu_heart:{
             mark:true,
             intro:{
-                content:'进入濒死状态时回复一点体力'
+                content:'下次受到伤害时回复一点体力'
             },
-            trigger:{player:'dying'},
+            trigger:{player:'damageEnd'},
             priority:6,
             forced:true,
             content:function(){
@@ -2343,6 +2462,11 @@ character.ow={
         }
     },
     translate:{
+        fengshi:'风矢',
+        fengshi2:'风矢',
+        fengshi_info:'锁定技，你的杀无视距离；你的杀指定目标后有20%的概率失效；你的杀造成伤害后有50%的概率令伤害+1',
+        yinbo:'音波',
+        yinbo_info:'出牌阶段限一次，你可以弃置一张黑桃牌，然后随机弃置三名敌人各一张牌',
         liudan:'榴弹',
         liudan_info:'每当你使用一张杀，你可以令所有不是此杀目标的其他角色有50%概率成为此杀的额外目标',
         shoujia:'兽夹',
@@ -2440,7 +2564,7 @@ character.ow={
         guangshu_spade:'光塔',
         guangshu_club:'光井',
         guangshu_diamond:'光流',
-        guangshu_info:'出牌阶段，你可以弃置一张牌，并指定一名角色，根据弃置牌的花色执行如下效果：♥该角色进入濒死状态时回复一点体力；♦︎该角色下次造成伤害时摸两张牌；♣该角色无法使用杀直到下一回合结束；♠该角色于下个回合结束阶段受到一点无来源的雷电伤害',
+        guangshu_info:'出牌阶段，你可以弃置一张牌，并指定一名角色，根据弃置牌的花色执行如下效果：♥该角色下次受到伤害时回复一点体力；♦︎该角色下次造成伤害时摸两张牌；♣该角色无法使用杀直到下一回合结束；♠该角色于下个回合结束阶段受到一点无来源的雷电伤害',
         ziyu:'自愈',
         ziyu_info:'在一名角色的回合结束阶段，你可以回复一点体力或摸一张牌，每隔四回合发动一次',
         shouhu:'守护',

@@ -18666,7 +18666,7 @@
 					ui.touchlines.shift().delete();
 				}
 			}
-            if(_status.canvasChanged){
+            if(_status.canvasChanged||!lib.config.low_performance){
                 ui.canvas.width=ui.arena.offsetWidth;
     			ui.canvas.height=ui.arena.offsetHeight;
                 delete _status.canvasChanged;
