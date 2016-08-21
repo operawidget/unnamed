@@ -69,6 +69,7 @@ mode.brawl={
             showcase.style.width='100%';
             showcase.style.display='block'
             showcase.action=info.showcase;
+            showcase.link=name;
             if(info.fullshow){
                 node.nodes=[showcase];
                 showcase.style.height='100%';
@@ -157,8 +158,19 @@ mode.brawl={
                 }
             }
         }
+        var sceneNode;
         for(var i in lib.brawl){
-            createNode(i);
+            if(i=='scene'){
+                sceneNode=createNode(i);
+            }
+            else{
+                createNode(i);
+            }
+        }
+        if(sceneNode){
+            game.switchScene=function(){
+                clickCapt.call(sceneNode);
+            }
         }
         for(var i in lib.storage.scene){
             game.addScene(i);
@@ -873,6 +885,15 @@ mode.brawl={
                 init:function(){
                     game.saveConfig('player_number',_status.brawl.scene.players.length,'identity');
                 },
+                showcase:function(init){
+                    if(init){
+                        var scene=lib.storage.scene[lib.brawl[this.link].name];
+                        ui.create.node('button','编辑场景',this,function(){
+                            _status.sceneToLoad=scene;
+                            game.switchScene();
+                        });
+                    }
+                },
                 content:{
                     submode:'normal',
                     noAddSetting:true,
@@ -892,17 +913,17 @@ mode.brawl={
                             maxpos=scene.players.length;
                         }
                         var posmap=[];
-                        for(var i=0;i<maxpos;i++){
-                            posmap[i]=i;
+                        for(var i=1;i<=maxpos;i++){
+                            posmap.push(i);
                         }
                         for(var i=0;i<scene.players.length;i++){
-                            if(scene.players[i].pos){
-                                posmap.remove(scene.players[i].pos);
+                            if(scene.players[i].position){
+                                posmap.remove(scene.players[i].position);
                             }
                         }
                         for(var i=0;i<scene.players.length;i++){
-                            if(!scene.players[i].pos){
-                                scene.players[i].pos=posmap.randomRemove();
+                            if(!scene.players[i].position){
+                                scene.players[i].position=posmap.randomRemove();
                             }
                         }
                         if(playercontrol.length){
@@ -922,21 +943,52 @@ mode.brawl={
                             return getpos(a)-getpos(b);
                         });
                         var target=game.me;
+                        _status.firstAct=game.me;
                         for(var i=0;i<scene.players.length;i++){
-                            target.brawlinfo=scene.players[i];
-                            target.identity=scene.players[i].identity;
-                            target.setIdentity(scene.players[i].identity);
+                            var info=scene.players[i];
+                            target.brawlinfo=info;
+                            target.identity=info.identity;
+                            target.setIdentity(info.identity);
+                            if(info.name2!='none'&&info.name2!='random'){
+                                if(info.name=='random'){
+                                    target.init(info.name2);
+                                }
+                                else{
+                                    target.init(info.name,info.name2);
+                                }
+                            }
+                            else{
+                                if(info.name!='random'){
+                                    target.init(info.name);
+                                }
+                            }
+                            if(info.linked) target.classList.add('linked');
+                            if(info.turnedover) target.classList.add('turnedover');
+                            if(target.brawlinfo.position<_status.firstAct.brawlinfo.position) _status.firstAct=target;
                             target=target.next;
                         }
                     },
-                    chooseCharacterAi:function(player){
-                        if(player.brawlinfo&&player.brawlinfo.name!='random'){
-                            player.init(player.brawlinfo.name)
+                    chooseCharacterAi:function(player,list,list2){
+                        var info=player.brawlinfo;
+                        if(info.name2!='none'){
+                            if(info.name=='random'&&info.name2=='random'){
+                                list=list.slice(0);
+                                player.init(list.randomRemove(),list.randomRemove());
+                            }
+                            else if(info.name=='random'){
+                                player.init(list.randomGet(),info.name2);
+                            }
+                            else if(info.name2=='random'){
+                                player.init(info.name,list.randomGet());
+                            }
                         }
                         else{
-                            return false;
+                            if(info.name=='random'){
+                                player.init(list.randomGet());
+                            }
                         }
-                    }
+                    },
+                    noGameDraw:true,
                 }
             },
             showcase:function(init){
@@ -1493,7 +1545,7 @@ mode.brawl={
                     var line9=ui.create.div(style2,this);
                     line9.style.display='none';
                     line9.style.marginTop='20px';
-                    var resetStatus=function(){
+                    var resetStatus=function(all){
                         if(line7.childElementCount>=8){
                             addCharacter.disabled=true;
                         }
@@ -1523,9 +1575,30 @@ mode.brawl={
                         capt_t.style.display='none';
                         capt_b.style.display='none';
                         capt_d.style.display='none';
+
+                        if(all===true){
+                            replacepile.checked=false;
+                            turns.value='1';
+                            turnsresult.value='none';
+                            washes.value='1';
+                            washesresult.value='none';
+                            line6_t.innerHTML='';
+                            line6_b.innerHTML='';
+                            line6_d.innerHTML='';
+                        }
                     }
 
                     ui.create.div('.menubutton.large','确定',line9,style3,resetStatus);
+
+                    game.loadScene=function(scene){
+                        resetCharacter();
+                        resetStatus(true);
+                    }
+                }
+                if(_status.sceneToLoad){
+                    var scene=_status.sceneToLoad;
+                    delete _status.sceneToLoad;
+                    game.loadScene(scene);
                 }
             }
         }

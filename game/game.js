@@ -4812,6 +4812,10 @@
                 },
                 gameDraw:function(){
     				"step 0"
+                    if(_status.brawl&&_status.brawl.noGameDraw){
+                        event.finish();
+                        return;
+                    }
     				var end=player;
     				var numx=num;
     				do{
