@@ -72,6 +72,7 @@
 		characterPack:{},
 		cardPack:{},
 		onresize:[],
+        onphase:[],
 		onwash:[],
 		onover:[],
         chatHistory:[],
@@ -4517,6 +4518,9 @@
 				window.lib=lib;
 				window._status=_status;
 			},
+            id:function(){
+                game.showIdentity();
+            },
             b:function(){
                 if(!ui.dialog||!ui.dialog.buttons) return;
                 for(var i=0;i<Math.min(arguments.length,ui.dialog.buttons.length);i++){
@@ -4877,6 +4881,9 @@
     			},
                 phaseLoop:function(){
     				"step 0"
+                    for(var i=0;i<lib.onphase.length;i++){
+						lib.onphase[i]();
+					}
     				player.phase();
     				"step 1"
     				if(!game.players.contains(event.player.next)){
@@ -8731,6 +8738,19 @@
 					var i,j;
 					if(arg1=='s'){
 						var skills=this.skills.slice(0);
+                        var es=[];
+                        if(arg3!==false){
+                            for(i=0;i<this.node.equips.childElementCount;i++){
+								if(this.node.equips.childNodes[i].classList.contains('removing')) continue;
+                                var equipskills=get.info(this.node.equips.childNodes[i]).skills;
+								if(equipskills){
+									es.addArray(equipskills);
+								}
+							}
+                            if(arg2=='e'){
+                                return es;
+                            }
+                        }
 						for(var i in this.additionalSkills){
 							if(Array.isArray(this.additionalSkills[i])){
 								for(j=0;j<this.additionalSkills[i].length;j++){
@@ -8746,16 +8766,8 @@
                         for(var i in this.tempSkills){
                             skills.add(i);
                         }
-						if(arg2) skills=skills.concat(this.hiddenSkills);
-						if(arg3!==false){
-							for(i=0;i<this.node.equips.childElementCount;i++){
-								if(this.node.equips.childNodes[i].classList.contains('removing')) continue;
-                                var equipskills=get.info(this.node.equips.childNodes[i]).skills;
-								if(equipskills){
-									skills=skills.concat(equipskills);
-								}
-							}
-						}
+						if(arg2) skills.addArray(this.hiddenSkills);
+						if(arg3!==false) skills.addArray(es);
                         for(var i in this.forbiddenSkills){
                             skills.remove(i);
                         }
@@ -27401,7 +27413,7 @@
 					return;
 				}
                 if(num==undefined) num=lib.configOL.number;
-				if(num==undefined) num=lib.config.mode_config[lib.config.mode].player_number;
+				if(num==undefined) num=get.playerNumber();
 				if(typeof num=='string'){
 					num=parseInt(num);
 				}
@@ -27508,7 +27520,7 @@
                         lib.card.list=_status.brawl.cardPile(lib.card.list);
                     }
                     if(_status.brawl.orderedPile){
-                        random=false;
+                        random=true;
                     }
                 }
 				if(!random){
@@ -29476,7 +29488,7 @@
 				}
                 var uiintro;
                 if(this.classList.contains('card')&&this.parentNode&&
-                this.parentNode.classList.contains('equips')&&lib.config.touchscreen&&
+                this.parentNode.classList.contains('equips')&&lib.config.layout=='phone'&&
                 !lib.isMobileMe(this.parentNode.parentNode)){
                     uiintro=get.nodeintro(this.parentNode.parentNode,false,e);
                 }
@@ -30090,6 +30102,16 @@
     			if(info.locked) return true;
     			return false;
     		},
+        },
+        playerNumber:function(){
+            var num;
+            if(_status.brawl&&_status.brawl.playerNumber){
+                num=_status.brawl.playerNumber
+            }
+            else{
+                num=get.config('player_number');
+            }
+            return parseInt(num)||2;
         },
         benchmark:function(func1,func2,arg,iteration){
             var tic,toc;
@@ -31494,7 +31516,9 @@
                 }
 
 				var skills=node.get('s');
-				var skills2=game.filterSkills(node.skills,node);
+                var es=node.get('s','e');
+                skills=skills.slice(0);
+				var skills2=game.filterSkills(skills,node);
 				for(i=0;i<skills.length;i++){
 					if(lib.skill[skills[i]]&&lib.skill[skills[i]].nopop) continue;
 					if(lib.translate[skills[i]+'_info']){
@@ -31513,6 +31537,12 @@
 						else if(!skills2.contains(skills[i])){
 							uiintro.add('<div style="opacity:0.5"><div class="skill">【'+translation+'】</div><div>'+lib.translate[skills[i]+'_info']+'</div></div>');
 						}
+                        else if(es.contains(skills[i])){
+                            uiintro.add('<div><div class="skill thundertext thunderauto">【'+translation+'】</div><div class="thundertext thunderauto">'+lib.translate[skills[i]+'_info']+'</div></div>');
+                        }
+                        else if(lib.skill[skills[i]].temp||!node.skills.contains(skills[i])){
+                            uiintro.add('<div><div class="skill legendtext legendauto">【'+translation+'】</div><div class="legendtext legendauto">'+lib.translate[skills[i]+'_info']+'</div></div>');
+                        }
 						else{
 							uiintro.add('<div><div class="skill">【'+translation+'】</div><div>'+lib.translate[skills[i]+'_info']+'</div></div>');
 						}
@@ -31532,8 +31562,8 @@
                     uiintro.add(addFavourite);
                 }
 
-				if(!simple||lib.config.touchscreen){
-                    if(lib.config.touchscreen){
+				if(!simple||lib.config.layout=='phone'){
+                    if(lib.config.layout=='phone'){
                         var storage=node.storage;
     					for(i in storage){
     						if(get.info(i)&&get.info(i).intro){

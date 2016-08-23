@@ -432,7 +432,7 @@ card.swd={
 				var list=get.typeCard('hslingjian');
 				var cards=[];
 				var time=0;
-				player.clearEquipTrigger();
+				target.clearEquipTrigger();
 				for(var i=0;i<es.length;i++){
 					if(lib.inpile.contains(es[i].name)){
 						var card=game.createCard(list.randomGet());
@@ -447,7 +447,7 @@ card.swd={
 								var info=get.info(card);
 			                    if(info.skills){
 			                        for(var i=0;i<info.skills.length;i++){
-			                            player.addSkillTrigger(info.skills[i]);
+			                            target.addSkillTrigger(info.skills[i]);
 			                        }
 			                    }
 								setTimeout(function(){
@@ -3572,6 +3572,7 @@ card.swd={
 				return (event.card&&(event.card.name=='sha'));
 			},
 			forced:true,
+			temp:true,
 			content:function(){
 				player.draw(2);
 				player.removeSkill('tianxianjiu');

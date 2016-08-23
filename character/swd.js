@@ -5765,13 +5765,13 @@ character.swd={
 			filter:function(event,player){
 				if(!event.player.isLinked()) return false;
 				if(event.nature=='fire') return false;
-				if(player.num('h',{color:'red'})) return true;
+				if(player.num('he',{color:'red'})) return true;
 				return false;
 			},
 			direct:true,
 			content:function(){
 				"step 0"
-				var next=player.chooseToDiscard('朱羽：是否弃置一张红色手牌使其受到一点火焰伤害？',function(card){
+				var next=player.chooseToDiscard('朱羽：是否弃置一张红色牌使其受到一点火焰伤害？','he',function(card){
 					return get.color(card)=='red';
 				});
 				next.logSkill=['zhuyu',trigger.player,'fire'];
@@ -5795,13 +5795,13 @@ character.swd={
 				if(!event.player) return false;
 				if(event.player==player) return false;
 				if(event.player.isLinked()&&event.player.isTurnedOver()) return false;
-				if(player.num('h',{color:'black'})) return true;
+				if(player.num('he',{color:'black'})) return true;
 				return false;
 			},
 			direct:true,
 			content:function(){
 				"step 0"
-				var next=player.chooseToDiscard('是否弃置一张黑色手牌使其横置或翻面？',function(card){
+				var next=player.chooseToDiscard('是否弃置一张黑色牌使其横置或翻面？','he',function(card){
 					return get.color(card)=='black';
 				});
 				next.logSkill='ningshuang';
@@ -8175,7 +8175,7 @@ character.swd={
 		funiao_info:'出牌阶段，你可以交给一名角色一张手牌，然后观看其手牌，每个阶段对一名角色只能发动一次',
 		xuehuang_info:'出牌阶段限一次，你可以弃置一张红色手牌令距离你一以内的所有角色受到一点火焰伤害',
 		zhuyu_info:'每当有横置的角色即将受到非火焰伤害，你可以弃置一张红色牌使其额外受到一点火焰伤害',
-		ningshuang_info:'每当你成为黑色牌的目标，你可以弃置一张黑色牌将其横置，并摸一张牌，若其已经模置则将其翻面',
+		ningshuang_info:'每当你成为黑色牌的目标，你可以弃置一张黑色牌将其横置，并摸一张牌，若其已经模置则改为将其翻面',
 		zaowu_old_info:'出牌阶段，你可以弃置三张不同类型的牌，创造任意两张牌并获得之',
 		xielv_info:'弃牌阶段结束后，若你的所有手牌（至少两张）颜色均相同，你可以展示所有手牌，然后选择一项：1、回复一点体力；2、弃置场上所有与你手牌颜色不同的牌',
 	},

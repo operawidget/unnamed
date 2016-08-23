@@ -1729,6 +1729,9 @@ span[data-color="unknownm"]{
 .browntext{
 	color: rgb(195,161,223);
 }
+.legendtext{
+	color: rgb(233, 131, 255);
+}
 #window>canvas.fun{
 	position: absolute;
 	left: 0;

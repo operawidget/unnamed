@@ -366,6 +366,7 @@ card.extra={
 			content:function(){
 				trigger.num++;
 			},
+			temp:true,
 			group:'jiu2'
 		},
 		jiu2:{
