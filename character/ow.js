@@ -517,8 +517,6 @@ character.ow={
                     target.discard(he.randomGet());
                 }
                 'step 2'
-                target.loseHp();
-                'step 3'
                 if(!target.isTurnedOver()){
                     target.turnOver();
                 }
@@ -1707,10 +1705,10 @@ character.ow={
             intro:{
                 content:'受到的伤害+1，直到首次进入濒死状态'
             },
-            trigger:{player:'damageBegin'},
+            trigger:{player:'damageEnd'},
             forced:true,
             content:function(){
-                trigger.num++;
+                player.loseHp();
             },
             ai:{
                 threaten:1.2
@@ -2567,7 +2565,7 @@ character.ow={
         shuangqiang:'霜枪',
         shuangqiang_info:'每当你对一名未翻面的角色造成伤害，你可以令伤害-1，然后令受伤害角色翻面',
         baoxue:'暴雪',
-        baoxue_info:'限定技，出牌阶段，你可以展示并弃置你的所有黑色牌，然后令至多X名其他角色随机弃置一张牌、流失一点体力并将武将牌翻至背面，X为你的弃牌数',
+        baoxue_info:'限定技，出牌阶段，你可以展示并弃置你的所有黑色牌，然后令至多X名其他角色随机弃置一张牌并将武将牌翻至背面，X为你的弃牌数',
         bingqiang:'冰墙',
         bingqiang2:'冰墙',
         bingqiang2_bg:'墙',
@@ -2605,7 +2603,7 @@ character.ow={
         luan:'乱',
         luan2:'乱',
         luan_old_info:'出牌阶段，你可以弃置一张黑桃手牌并指定一名角色，该角色自其下一回合开始每隔六回合失去一点体力，直到你死亡。同一时间只能对一人发动',
-        luan_info:'出牌阶段，你可以弃置一张黑桃手牌并指定一名角色，该角色受到的伤害+1，直到你死亡或其首次进入濒死状态。同一时间只能对一人发动',
+        luan_info:'出牌阶段，你可以弃置一张黑桃手牌并指定一名角色，该角色受到伤害后流失一点体力，直到你死亡或其首次进入濒死状态。同一时间只能对一人发动',
         sheng:'圣',
         sheng_info:'限定技，出牌阶段，你可以将你的武将牌翻面，然后令任意名角色回复一点体力，若如此做，你不能成为其他角色的卡牌目标直到下一回合开始',
         xiandan:'霰弹',
