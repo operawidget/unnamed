@@ -40,6 +40,9 @@ mode.tafang={
 		}
 		game.loadMap();
 		"step 2"
+		var map=lib.tafang.map[result];
+		ui.chesswidth=map.size[0];
+		ui.chessheight=map.size[1];
 		ui.chesssheet=document.createElement('style');
 		document.head.appendChild(ui.chesssheet);
 		var playback=localStorage.getItem(lib.configprefix+'playback');
@@ -115,8 +118,8 @@ mode.tafang={
 			}
 			game.playerMap=lib.posmap;
 		}
-		ui.chesswidth=parseInt(get.config('tafang_size'));
-		ui.chessheight=11;
+		// ui.chesswidth=parseInt(get.config('tafang_size'));
+		// ui.chessheight=11;
 		ui.chess.style.height=148*ui.chessheight+'px';
 		ui.chess.style.width=148*ui.chesswidth+'px';
 		if(!lib.config.touchscreen){
@@ -352,20 +355,17 @@ mode.tafang={
 	},
 	tafang:{
 		map:{
-            taoyuanxiang:{
-                name:'桃源乡'
+            basic_small:{
+                name:'小型战场',
+				size:[6,11],
             },
-            yingxiongting:{
-                name:'英雄亭'
+            basic_medium:{
+                name:'中型战场',
+				size:[9,11],
             },
-            nanyang:{
-                name:'南阳',
-            },
-            xinye:{
-                name:'新野'
-            },
-            xujiacun:{
-                name:'许家村',
+            basic_large:{
+                name:'大型战场',
+				size:[12,11],
             },
 		}
 	},
@@ -832,10 +832,10 @@ mode.tafang={
             var next=game.createEvent('loadMap');
             next.setContent(function(){
 				if(!lib.storage.map){
-					lib.storage.map=['taoyuanxiang'];
+					lib.storage.map=['basic_small','basic_medium','basic_large'];
 				}
 				if(!lib.storage.newmap){
-					lib.storage.newmap=['taoyuanxiang'];
+					lib.storage.newmap=[];
 				}
 				var sceneview=ui.create.div('.storyscene');
 				if(!lib.config.touchscreen&&lib.config.mousewheel){
@@ -848,6 +848,11 @@ mode.tafang={
 	                };
 				}
 				lib.setScroll(sceneview);
+				var switchScene=function(){
+					event.result=this.link;
+					sceneview.delete();
+					setTimeout(game.resume,300);
+				}
                 var clickScene=function(e){
                     if(this.classList.contains('unselectable')) return;
                     if(this._clicking) return;
@@ -866,6 +871,7 @@ mode.tafang={
                         restoreScene(current,true);
                     }
                     this.content.innerHTML='';
+					ui.create.div('.menubutton.large.enter','进入',this.content,switchScene).link=this.name;
                     sceneNode.classList.add('lockscroll');
                     var node=this;
                     node._clicking=true;
@@ -935,7 +941,7 @@ mode.tafang={
                     node.name=name;
                     node.bgnode=ui.create.div('.background.player',node);
                     node.info=scene;
-                    ui.create.div('.avatar',node.bgnode).setBackground('mode/story/scene/'+name);
+                    ui.create.div('.avatar.menu',node.bgnode);
                     node.namenode=ui.create.div('.name',node,get.verticalStr(scene.name));
                     if(lib.storage.map.contains(name)){
                         if(lib.storage.newmap.contains(name)){

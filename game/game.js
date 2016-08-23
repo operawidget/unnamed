@@ -2804,16 +2804,16 @@
 							'1000':'无限',
 						}
 					},
-					tafang_size:{
-						name:'战场大小',
-						init:'9',
-						frequent:true,
-						item:{
-							'6':'小',
-							'9':'中',
-							'12':'大',
-						}
-					},
+					// tafang_size:{
+					// 	name:'战场大小',
+					// 	init:'9',
+					// 	frequent:true,
+					// 	item:{
+					// 		'6':'小',
+					// 		'9':'中',
+					// 		'12':'大',
+					// 	}
+					// },
 					tafang_difficulty:{
 						name:'战斗难度',
 						init:'2',
