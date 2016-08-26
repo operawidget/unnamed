@@ -7,6 +7,7 @@ card.extra={
 			type:"basic",
 			enable:true,
 			lianheng:true,
+			logv:false,
 			savable:function(card,player,dying){
 				return dying==player;
 			},

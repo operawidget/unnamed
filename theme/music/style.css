@@ -70,7 +70,10 @@ body[data-background_color_music='blue'] #arena.mobile:not(.chess) .player[data-
 .card{
 	color:white;
 }
-.card:not(*:empty){
+.cardbg{
+	background-size: initial !important;
+}
+.card:not(*:empty),.cardbg{
 	color:rgb(77, 60, 51);
 	text-shadow:none;
 	background: url('wood3.png');

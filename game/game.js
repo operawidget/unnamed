@@ -6986,7 +6986,6 @@
 						}
                         if(card.name=='wuxie'){
                             //目标 卡牌 国战暗将 find project号位
-                            console.log(event.getTrigger().card,event.getTrigger().name);
                             game.logv(player,[card,cards],[event.getTrigger().card]);
                         }
                         else{
@@ -7190,6 +7189,7 @@
 					str+='发动了';
 					if(!info.direct){
 						game.log(player,str,'【'+get.skillTranslation(skill,player)+'】');
+                        game.logv(player,skill,targets);
 						if(lib.config.skill_animation&&lib.skill[skill]&&lib.skill[skill].skillAnimation){
 							player.$skill(lib.skill[skill].animationStr||lib.translate[skill],lib.skill[skill].skillAnimation,lib.skill[skill].animationColor);
 						}
@@ -10357,6 +10357,7 @@
 					if(game.chess){
 						this.chessFocus();
 					}
+                    game.logv(this,name,targets);
 				},
 				unprompt:function(){
 					if(this.node.prompt){
@@ -13973,6 +13974,7 @@
 			},
 			_chongzhu:{
 				enable:'phaseUse',
+                logv:false,
 				prompt:'将要重铸的牌置于弃牌堆并摸一张牌',
 				filter:function(event,player){
 					return (player.num('h',function(card){
@@ -19416,6 +19418,16 @@
             game.broadcast(function(str){
                 game.log(str);
             },str);
+            var logvid=_status.event.getParent().logvid;
+            if(!logvid){
+                logvid=_status.event.getParent(2).logvid;
+            }
+            if(!logvid){
+                logvid=_status.event.getParent(3).logvid;
+            }
+            if(logvid){
+                game.logv(logvid,'<div class="text center">'+str+'</div>');
+            }
 			if(lib.config.title) document.title=str;
 			if(lib.config.show_log!='off'&&!game.chess){
                 var nodeentry=node.cloneNode(true);
@@ -19446,23 +19458,84 @@
 		},
         logv:function(player,card,targets){
             var node=ui.create.div();
+            if(!player){
+                player=_status.event.getParent().logvid;
+                if(!player) return;
+            }
+            if(typeof player=='string'){
+                for(var i=0;i<ui.historybar.childElementCount;i++){
+                    if(ui.historybar.childNodes[i].logvid==player){
+                        ui.historybar.childNodes[i].added.push(card);break;
+                    }
+                }
+                return;
+            }
             if(typeof card=='string'){
-                card={name:card};
+                if(lib.skill[card]&&lib.skill[card].logv===false) return;
+                var avatar;
+                if(!player.classList.contains('unseen')){
+                    avatar=player.node.avatar.cloneNode();
+                }
+                else if(!player.classList.contains('unseen2')){
+                    avatar=player.node.avatar2.cloneNode();
+                }
+                else{
+                    return;
+                }
+                ui.create.div('',get.translation(card,'skill'),avatar).dataset.nature='water';
+                node.skill=card;
+                avatar.className='avatar';
+                node.appendChild(avatar);
             }
             else if(Array.isArray(card)){
                 node.cards=card[1];
                 card=card[0];
-            }
-            if(card.copy){
-                card.copy(node,false);
-            }
-            else{
-                var info=[card.suit||'',card.number||'',card.name||'',card.nature||''];
-                card=ui.create.card(node,'noclick',true);
-                card.init(info);
+                if(!Array.isArray(node.cards)){
+                    node.cards=[];
+                }
+                if(card.name=='wuxie'){
+                    if(ui.historybar.firstChild&&ui.historybar.firstChild.type=='wuxie'){
+                        ui.historybar.firstChild.players.push(player);
+                        ui.historybar.firstChild.cards.addArray(node.cards);
+                        return;
+                    }
+                    else{
+                        node.type='wuxie';
+                        node.players=[player];
+                    }
+                }
+                if(card.copy){
+                    card.copy(node,false);
+                }
+                else{
+                    var info=[card.suit||'',card.number||'',card.name||'',card.nature||''];
+                    card=ui.create.card(node,'noclick',true);
+                    card.init(info);
+                }
+                var avatar;
+                if(!player.classList.contains('unseen')){
+                    avatar=player.node.avatar.cloneNode();
+                }
+                else if(!player.classList.contains('unseen2')){
+                    avatar=player.node.avatar2.cloneNode();
+                }
+                else if(get.mode()=='guozhan'&&player.node&&player.node.name_seat){
+                    avatar=ui.create.div('.avatar.cardbg');
+                    avatar.innerHTML=player.node.name_seat.innerHTML[0];
+                }
+                else{
+                    return;
+                }
+                avatar.classList.add('avatar2');
+                node.appendChild(avatar);
             }
             if(targets&&targets.length){
-                node.targets=targets;
+                if(targets.length==1&&targets[0]==player){
+                    node.targets=[];
+                }
+                else{
+                    node.targets=targets;
+                }
             }
             ui.historybar.insertBefore(node,ui.historybar.firstChild);
             if(ui.historybar.childElementCount>20){
@@ -19474,6 +19547,9 @@
             else{
                 node.addEventListener('mouseenter',ui.click.intro);
             }
+            node.logvid=get.id();
+            node.added=[];
+            _status.event.logvid=node.logvid;
         },
 		putDB:function(type,id,item,callback){
 			if(!lib.db) return item;
@@ -27422,7 +27498,13 @@
 							intro:ui.create.div('.intro',node)
 						}
 						if(item.name.indexOf('unknown')==0){
-							node.setBackground(item.name1,'character');
+                            if(item.node&&item.node.name_seat){
+                                node.classList.add('cardbg');
+                                ui.create.div('.avatar_name',node,item.node.name_seat.innerHTML[0]+'号位');
+                            }
+                            else{
+                                node.setBackground(item.name1,'character');
+                            }
 						}
 						else{
 							node.setBackground(item.name,'character');
@@ -29567,7 +29649,8 @@
 					event.result.skill=event.skill;
 					event.result.card=get.info(event.skill).viewAs;
 					if(event.result.cards.length==1&&event.result.card){
-						event.result.card.suit=event.result.cards[0].suit;
+                        event.result.card.suit=event.result.cards[0].suit;
+						event.result.card.number=event.result.cards[0].number;
 					}
 					if(event.skillDialog&&get.objtype(event.skillDialog)=='div'){
 						event.skillDialog.close();
@@ -29635,6 +29718,17 @@
 				if(this.classList.contains('player')&&!this.name){
 					return;
 				}
+                if(this.parentNode==ui.historybar&&!lib.config.touchscreen){
+                    if(ui.historybar.style.zIndex=='22'){
+                        if(_status.removePop){
+                            _status.removePop();
+                        }
+                        else{
+                            return;
+                        }
+                    }
+                    ui.historybar.style.zIndex=22;
+                }
                 var uiintro;
                 if(this.classList.contains('card')&&this.parentNode&&
                 this.parentNode.classList.contains('equips')&&lib.config.layout=='phone'&&
@@ -29649,8 +29743,10 @@
 				var layer=ui.create.div('.poplayer',ui.window);
 				var clicklayer=function(e){
                     if(_status.touchpopping) return;
+                    delete _status.removePop;
 					uiintro.delete();
 					this.remove();
+                    ui.historybar.style.zIndex='';
 					if(!ui.arena.classList.contains('menupaused')) game.resume2();
 					e.stopPropagation();
 					return false;
@@ -29658,14 +29754,28 @@
 				layer.addEventListener(lib.config.touchscreen?'touchend':'click',clicklayer);
 				if(!lib.config.touchscreen) layer.oncontextmenu=clicklayer;
 				lib.placePoppedDialog(uiintro,e);
+                if(this.parentNode==ui.historybar){
+                    if(lib.config.show_history=='right'){
+                        uiintro.style.left=(ui.historybar.offsetLeft-230)+'px';
+                    }
+                    else{
+                        uiintro.style.left=(ui.historybar.offsetLeft+60)+'px';
+                    }
+                }
 				uiintro.style.zIndex=21;
-
 				var clickintro=function(){
                     if(_status.touchpopping) return;
+                    delete _status.removePop;
 					layer.remove();
 					this.delete();
+                    ui.historybar.style.zIndex='';
 					if(!ui.arena.classList.contains('menupaused')) game.resume2();
 				};
+                _status.removePop=function(){
+                    layer.remove();
+                    uiintro.delete();
+                    delete _status.removePop;
+                };
 				uiintro.addEventListener('mouseleave',clickintro);
 				uiintro.addEventListener('click',clickintro);
 
@@ -31210,6 +31320,23 @@
 				}
 				return str2;
 			}
+            if(arg=='skill'){
+                if(lib.translate[str+'_ab']) return lib.translate[str+'_ab'];
+                if(lib.translate[str]) return lib.translate[str].slice(0,2);
+                return str;
+            }
+            else if(arg=='info'){
+                if(lib.translate[str+'_info']) return lib.translate[str+'_info'];
+                var str2=str.slice(0,str.length-1);
+                if(lib.translate[str2+'_info']) return lib.translate[str2+'_info'];
+                if(str.lastIndexOf('_')>0){
+                    str2=str.slice(0,str.lastIndexOf('_'));
+                    if(lib.translate[str2+'_info']) return lib.translate[str2+'_info'];
+                }
+                str2=str.slice(0,str.length-2);
+                if(lib.translate[str2+'_info']) return lib.translate[str2+'_info'];
+                if(lib.skill[str]&&lib.skill[str].prompt) return lib.skill[str].prompt;
+            }
 			return lib.translate[str]||str;
 		},
 		cnNumber:function(num,two){
@@ -32021,13 +32148,27 @@
 			}
             else if(node.parentNode==ui.historybar){
                 // uiintro.add(get.translation(node.firstChild));
-                if(node.targets){
+                if(node.skill){
+                    uiintro.add('<div class="text center">'+get.translation(node.skill,'skill')+'</div>');
+                    uiintro._place_text=uiintro.add('<div class="text" style="display:inline">'+get.translation(node.skill,'info')+'</div>');
+                }
+                if(node.targets&&node.targets.length){
                     uiintro.add('<div class="text center">目标</div>');
                     uiintro.addSmall(node.targets);
                 }
-                if(node.cards){
+                if(node.players&&node.players.length){
+                    uiintro.add('<div class="text center">使用者</div>');
+                    uiintro.addSmall(node.players);
+                }
+                if(node.cards&&node.cards.length){
                     uiintro.add('<div class="text center">卡牌</div>');
                     uiintro.addSmall(node.cards);
+                }
+                for(var i=0;i<node.added.length;i++){
+                    uiintro.add(node.added[i]);
+                }
+                if(node.added.length){
+                    uiintro.add(ui.create.div('.placeholder.slim'));
                 }
                 if(uiintro.content.firstChild){
                     uiintro.content.firstChild.style.paddingTop='3px';

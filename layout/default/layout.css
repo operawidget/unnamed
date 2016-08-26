@@ -335,7 +335,7 @@ table{table-layout: fixed;}
 	visibility: hidden;
 	opacity: 0;
 	overflow: scroll;
-	z-index: 2,
+	z-index: 2;
 	transition-property: opacity,visibility;
 }
 #historybar>div{
@@ -356,6 +356,38 @@ table{table-layout: fixed;}
 	top: 4px;
 	position: absolute;
 }
+#historybar>div>.avatar{
+	padding: 0;
+    margin: 0;
+    position: absolute;
+	left: 4px;
+	top: 4px;
+	width: 42px;
+	height: 42px;
+	border-radius: 3.230768px;
+}
+#historybar>div>.avatar>div{
+	position: absolute;
+    margin: 0;
+    padding: 0;
+    left: 0;
+    bottom: 2px;
+    height: auto;
+    font-family: 'xinwei';
+    font-size: 18px;
+    text-align: center;
+    width: 100%;
+}
+#historybar>div>.avatar2{
+	width: 20px;
+    height: 20px;
+    left: 28px;
+    top: 28px;
+    border-radius: 4px;
+	font-family: 'xinwei';
+	font-size: 20px;
+	line-height: 20px;
+}
 #window.rightbar #historybar,
 #window.rightbar2:not(.leftbar) #historybar{
 	left: calc(97.5% - 50px);
@@ -364,6 +396,16 @@ table{table-layout: fixed;}
 #window.rightbar #historybar{
 	opacity: 1;
 	visibility: visible;
+}
+.dialog .button.character.cardbg>.avatar_name{
+	font-family: 'xinwei';
+	font-size: 20px;
+	width: 100%;
+	height: 20px;
+	line-height: 20px;
+	top:44px;
+	left:0;
+	text-align: center;
 }
 .player:not(.treasure).playerfocus{
 	transform: scale(1.1);
@@ -1737,6 +1779,10 @@ span[data-color="unknownm"]{
 	text-shadow: none;
     text-align:center;
 	line-height: 18px;
+}
+.cardbg,.button.character.cardbg{
+	color:rgb(74, 29, 1);
+	text-shadow: none;
 }
 .card.fullskin>.name.long{
 	top:5px;

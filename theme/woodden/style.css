@@ -37,6 +37,9 @@ html{
 	color:rgba(77, 60, 51,0.8);
 	text-shadow:none;
 }
+.cardbg{
+	background-size: initial !important;
+}
 #splash>div{
 	background:url('wood2.png');
 }
@@ -62,16 +65,23 @@ html{
 .popup.thunder{
 	color: rgb(117,186,255);
 }
-.control .thundertext,.thundertext.thunderauto{
+.control .thundertext,.thundertext.thunderauto,
+.dialog.popped .bluetext{
 	color: rgba(29, 63, 137, 1);
 }
 .control .controlthundertext{
 	color: rgb(62, 41, 30);
 }
+.dialog.popped .yellowtext{
+	color:#631515;
+}
+.dialog.popped .greentext{
+	color:#00312d;
+}
 .legendtext.legendauto{
 	color: rgba(106, 27, 154, 1);
 }
-.player,.card,.dialog>.bar,
+.player,.card,.dialog>.bar,.cardbg,
 #arena.mobile:not(.chess) .player[data-position='0'] .equips,.playerbg{
 	background: url('wood.jpg');
 }
@@ -156,7 +166,7 @@ html{
 .card.equip4>.range{
 	text-shadow: white 0 0 2px;
 }
-.card{
+.card,.menubg,.cardbg,.button.character.cardbg{
 	color:rgb(77, 60, 51);
 	text-shadow:none;
 }

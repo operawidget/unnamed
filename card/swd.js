@@ -984,6 +984,7 @@ card.swd={
 			},
 			usable:1,
 			selectTarget:-1,
+			logv:false,
 			modTarget:true,
 			filterTarget:function(card,player,target){
 				return target==player;

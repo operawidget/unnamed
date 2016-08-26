@@ -525,6 +525,7 @@ character.hearth={
 			intro:{
 				content:'下一次造成的伤害+1'
 			},
+			logv:false,
 			trigger:{source:'damageBegin'},
 			forced:true,
 			content:function(){
