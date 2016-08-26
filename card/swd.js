@@ -3136,15 +3136,14 @@ card.swd={
 				return att<=0;
 			},
 			filter:function(event,player){
-				return !event.target.hasSkill('fengxueren2')&&!event.target.isTurnedOver();
+				return !event.target.isTurnedOver();
 			},
 			content:function(){
 				trigger.unhurt=true;
 				trigger.target.turnOver();
-				trigger.target.addTempSkill('fengxueren2',{player:'phaseBegin'});
+				trigger.target.draw();
 			}
 		},
-		fengxueren2:{},
 		chilongya:{
 			trigger:{source:'damageBegin'},
 			forced:true,
@@ -3551,6 +3550,7 @@ card.swd={
 					return att<=0;
 				}
 				if(event.target.hp==1) return att>0;
+				if(event.target.hujia>0) return att<0;
 				return false;
 			},
 			content:function(){
@@ -3773,7 +3773,7 @@ card.swd={
 		baihupifeng_info:'回合结束阶段，若你的体力值是全场最小的之一，你可以回复一点体力',
 		fengxueren:'封雪刃',
 		fengxueren_bg:'雪',
-		fengxueren_info:'你使用杀击中目标后，若目标武将牌正面朝上，你可以防止伤害，然后令目标翻面，若如此做，该角色在下一回合开始前不受封雪刃效果影响',
+		fengxueren_info:'你使用杀击中目标后，若目标武将牌正面朝上，你可以防止伤害，然后令目标摸一张牌并翻面',
 		chilongya:'赤龙牙',
 		chilongya_info:'锁定技，你的火属性伤害+1',
 		daihuofenglun:'带火风轮',

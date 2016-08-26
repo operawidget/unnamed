@@ -95,8 +95,8 @@
 .storyscene>.scene>.name{
     font-size: 48px;
     left: 25px;
-    /*top: auto;*/
-    top: 28px;
+    top: auto;
+    bottom: 28px;
     /*transform: rotateY(-180deg);*/
     border-radius: 16px !important;
     z-index: 2;

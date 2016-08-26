@@ -4,7 +4,7 @@ html{
 	background: url('grid.png'),linear-gradient(#6c7989, #434b55) fixed;
 }
 #system>div>div,#mebg,.control,.player,.card,.avatar,.avatar2,.button,.dialog>.bar,.menu,#splash>div,
-#arena.mobile:not(.chess) .player[data-position='0'] .equips,.playerbg{
+#arena.mobile:not(.chess) .player[data-position='0'] .equips,.playerbg,.menubg,.mebg{
 	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgba(0, 0, 0, 0.45) 0 3px 10px;
 	border-radius: 8px;
 }
@@ -32,7 +32,7 @@ html{
 .menu.main>.menu-tab>.disabled{
 	color: rgba(77, 60, 51,0.5);
 }
-#window>.dialog.popped,.menu{
+#window>.dialog.popped,.menu,.menubg{
 	background:url('wood2.png');
 	color:rgba(77, 60, 51,0.8);
 	text-shadow:none;
@@ -105,7 +105,7 @@ html{
 	text-shadow:none;
 	border-radius:4px;
 }
-#roundmenu>div{
+#roundmenu>div:not(.clock){
 	background:rgba(77, 60, 51,0.8);
 	box-shadow:none;
 }
@@ -115,7 +115,7 @@ html{
 .judges>div,.marks>div{
 	border-radius:4px;
 }
-#mebg,.menubutton,.menubutton.highlight,.menubutton.active{
+#mebg,.menubutton,.menubutton.highlight,.menubutton.active,.mebg{
 	background: url('wood.png');
 }
 .menubutton.large{

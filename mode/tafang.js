@@ -38,11 +38,13 @@ mode.tafang={
 				}
 			}
 		}
-		game.loadMap();
+        // if(!localStorage.getItem(lib.configprefix+'playback')){
+        //     game.loadMap();
+        // }
 		"step 2"
-		var map=lib.tafang.map[result];
-		ui.chesswidth=map.size[0];
-		ui.chessheight=map.size[1];
+		var result='basic_medium';
+		_status.map=lib.tafang.map[result];
+        _status.mapname=result;
 		ui.chesssheet=document.createElement('style');
 		document.head.appendChild(ui.chesssheet);
 		var playback=localStorage.getItem(lib.configprefix+'playback');
@@ -92,34 +94,18 @@ mode.tafang={
         _status.enemylist=[];
 		"step 3"
 		ui.arena.classList.add('chess');
-		var mylistmap,enemylistmap;
 		if(event.video){
-			var videocontent;
 			for(var ii=0;ii<event.video.length;ii++){
 				if(event.video[ii].type=='init'){
-					videocontent=event.video[ii].content;
+					_status.mapname=event.video[ii].content;
 					break;
 				}
 			}
-			mylistmap=[];
-			enemylistmap=[];
-			for(var i=0;i<videocontent.length;i++){
-				if(videocontent[i].lord){
-					_status.lord=videocontent[i].name;
-				}
-				if(videocontent[i].identity=='friend'){
-					_status.mylist.push(videocontent[i].name);
-					mylistmap.push(videocontent[i].position);
-				}
-				else{
-					_status.enemylist.push(videocontent[i].name);
-					enemylistmap.push(videocontent[i].position);
-				}
-			}
+            _status.map=lib.tafang.map[_status.mapname];
 			game.playerMap=lib.posmap;
 		}
-		// ui.chesswidth=parseInt(get.config('tafang_size'));
-		// ui.chessheight=11;
+		ui.chesswidth=_status.map.size[0];
+		ui.chessheight=_status.map.size[1];
 		ui.chess.style.height=148*ui.chessheight+'px';
 		ui.chess.style.width=148*ui.chesswidth+'px';
 		if(!lib.config.touchscreen){
@@ -269,7 +255,7 @@ mode.tafang={
 			return;
 		}
 		_status.videoInited=true;
-		game.addVideo('init',null,[]);
+		game.addVideo('init',null,_status.mapname);
 		if(game.friendZhu){
 			game.addVideo('identityText',game.friendZhu,'将');
 			game.addVideo('identityText',game.enemyZhu,'帅');
@@ -358,6 +344,7 @@ mode.tafang={
             basic_small:{
                 name:'小型战场',
 				size:[6,11],
+				obstacle:[]
             },
             basic_medium:{
                 name:'中型战场',
@@ -942,7 +929,7 @@ mode.tafang={
                     node.bgnode=ui.create.div('.background.player',node);
                     node.info=scene;
                     ui.create.div('.avatar.menu',node.bgnode);
-                    node.namenode=ui.create.div('.name',node,get.verticalStr(scene.name));
+                    node.namenode=ui.create.div('.name',node,(scene.name));
                     if(lib.storage.map.contains(name)){
                         if(lib.storage.newmap.contains(name)){
                             node.classList.add('glow3');
@@ -951,7 +938,7 @@ mode.tafang={
                     }
                     else{
                         node.classList.add('unselectable');
-                        node.namenode.innerHTML=get.verticalStr('未开启');
+                        node.namenode.innerHTML=('未开启');
                     }
                     var content=ui.create.div('.menu',node);
                     lib.setScroll(content);

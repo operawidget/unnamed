@@ -16,7 +16,7 @@ character.swd={
 			swd_duguningke:['female','qun',3,['lianji','touxi']],
 			swd_guyue:['male','wei',3,['tiandao','qinyin','wangchen']],
 			swd_tuobayuer:['female','shu',4,['liuhong','poyue','niepan']],
-			swd_yuwentuo:['male','qun',4,['wushuang','xielei','kunlunjing']],
+			swd_yuwentuo:['male','shu',4,['wushuang','xielei','kunlunjing']],
 			swd_yuxiaoxue:['female','wei',3,['huanhun','daixing','yinyue']],
 
 			swd_jiliang:['male','wu',3,['yunchou','gongxin','qimou']],
@@ -3398,30 +3398,25 @@ character.swd={
 					ui.window.hide();
 				}
 			},
-			intro:{
-				content:function(storage,player){
-					if(true){
-						return player.storage.kunlunjing3;
-					}
-				}
-			}
 		},
 		kunlunjing1:{
-			trigger:{player:['phaseBefore']},
+			trigger:{player:'phaseBegin'},
+			priority:10,
 			filter:function(event,player){
-				if(player.storage.kunlunjing2) return false;
-				if(player.storage.kunlunjing) return true;
-				return false;
+				if(!player.storage.kunlunjing) return false;
+				return player.hp<player.storage.kunlunjing2;
+			},
+			onremove:function(player){
+				delete player.storage.kunlunjing;
+				delete player.storage.kunlunjing2;
 			},
 			check:function(event,player){
-				// if(event.name=='phase'&&player.hp<3) return false;
-				var storage=event.player.storage.kunlunjing;
+				var storage=player.storage.kunlunjing;
 				var num=0;
 				for(var i=0;i<storage.length;i++){
 					if(game.players.contains(storage[i].player)){
 						var att=ai.get.attitude(player,storage[i].player);
 						var num2=storage[i].value-storage[i].player.num('he')+storage[i].player.num('j');
-						// console.log(storage[i].player.name,storage[i].value,storage[i].player.num('he')-storage[i].player.num('j'))
 						if(att>0){
 							num+=num2;
 						}
@@ -3430,15 +3425,12 @@ character.swd={
 						}
 					}
 				}
-				// return num>2;
-				if(player.hp==2) return num>4;
-				return num>Math.min(3,game.players.length);
+				return num>Math.min(2,game.players.length/2);
 			},
 			content:function(){
 				"step 0"
 				game.delay(0.5);
 				"step 1"
-				event.player.storage.kunlunjing2=true;
 				ui.window.style.transition='all 0.5s';
 				ui.window.classList.add('zoomout3');
 				ui.window.delete();
@@ -3470,19 +3462,31 @@ character.swd={
 						player=storage[i].player;
 						for(j=0;j<storage[i].handcards1.length;j++){
 							if(storage[i].handcards1[j].parentNode==ui.discardPile||
-							storage[i].handcards1[j].parentNode==ui.cardPile)
-							player.node.handcards1.appendChild(storage[i].handcards1[j]);
+							storage[i].handcards1[j].parentNode==ui.cardPile){
+								player.node.handcards1.appendChild(storage[i].handcards1[j]);
+							}
+							else{
+								player.node.handcards1.appendChild(game.createCard(storage[i].handcards1[j]));
+							}
 						}
 						for(j=0;j<storage[i].handcards2.length;j++){
 							if(storage[i].handcards2[j].parentNode==ui.discardPile||
-							storage[i].handcards2[j].parentNode==ui.cardPile)
-							player.node.handcards2.appendChild(storage[i].handcards2[j]);
+							storage[i].handcards2[j].parentNode==ui.cardPile){
+								player.node.handcards2.appendChild(storage[i].handcards2[j]);
+							}
+							else{
+								player.node.handcards2.appendChild(game.createCard(storage[i].handcards2[j]));
+							}
 						}
 						for(j=0;j<storage[i].equips.length;j++){
 							if(storage[i].equips[j].parentNode==ui.discardPile||
-							storage[i].equips[j].parentNode==ui.cardPile)
-							storage[i].equips[j].style.transform='';
-							player.node.equips.appendChild(storage[i].equips[j]);
+							storage[i].equips[j].parentNode==ui.cardPile){
+								storage[i].equips[j].style.transform='';
+								player.$equip(storage[i].equips[j]);
+							}
+							else{
+								player.$equip(game.createCard(storage[i].equips[j]));
+							}
 						}
 						for(j=0;j<storage[i].judges.length;j++){
 							if(storage[i].judges[j].parentNode==ui.discardPile||
@@ -3519,15 +3523,8 @@ character.swd={
 					ui.window.style.transition='';
 					game.resume();
 				},500);
-				event.player.storage.kunlunjing3='已发动';
 				game.pause();
 				'step 4'
-				if(trigger.name=='phase'){
-					var player=event.player;
-					if(player.num('h')){
-						player.chooseToDiscard('h',true);
-					}
-				}
 				ui.updatehl();
 			}
 		},
@@ -3539,10 +3536,7 @@ character.swd={
 			content:function(){
 				var handcards1,handcards2,judges,equips,viewAs,i,j;
 				player.storage.kunlunjing=[];
-				player.storage.kunlunjing2=false;
-
-				var table=document.createElement('table');
-				var tr,td,str,st;
+				player.storage.kunlunjing2=player.hp;
 
 				for(i=0;i<game.players.length;i++){
 					viewAs=[];
@@ -3565,35 +3559,6 @@ character.swd={
 					for(j=0;j<game.players[i].node.equips.childNodes.length;j++)
 						equips.push(game.players[i].node.equips.childNodes[j]);
 
-					tr=document.createElement('tr');
-					tr.style.verticalAlign='top';
-					table.appendChild(tr);
-					td=document.createElement('td');
-					td.innerHTML=get.translation(game.players[i]);
-					tr.appendChild(td);
-					td=document.createElement('td');
-					td.innerHTML=(handcards1.length+handcards2.length);
-					tr.appendChild(td);
-
-					str='';
-					if(equips.length+judges.length){
-						if(equips.length){
-							str+=get.translation(equips);
-							if(judges.length){
-								str+='、';
-							}
-						}
-						if(judges.length){
-							str+=get.translation(judges,'viewAs');
-						}
-					}
-					else{
-						str='';
-					}
-					td=document.createElement('td');
-					td.innerHTML=str;
-					tr.appendChild(td);
-
 					player.storage.kunlunjing.push({
 						player:game.players[i],
 						handcards1:handcards1,
@@ -3604,9 +3569,6 @@ character.swd={
 						value:handcards1.length+handcards2.length+equips.length-judges.length
 					});
 				}
-				table.firstChild.firstChild.style.width='85px';
-				table.firstChild.childNodes[1].style.width='48px';
-				player.storage.kunlunjing3='未发动';
 			}
 		},
 		oldliaoyuan:{
@@ -6963,7 +6925,7 @@ character.swd={
 			enable:'phaseUse',
 			usable:1,
 			intro:{
-				content:''
+				content:'濒死时回复一点体力并失去鬼眼'
 			},
 			mark:true,
 			filterTarget:function(card,player,target){
@@ -8123,7 +8085,7 @@ character.swd={
 		shengshou_info:'你可以将一张黑色手牌当作草药使用',
 		susheng_info:'在任意一名角色即将死亡时，你可以弃置一张手牌防止其死亡，并将其体力回复至1，每回合限发动一次',
 		zhanlu_info:'出牌阶段，你可以弃置一张黑桃牌令至多３名角色各回复一点体力',
-		kunlunjing_info:'回合开始前，你可以令场上所有牌还原到你上一回合结束时的位置，然后弃置一张手牌',
+		kunlunjing_info:'回合开始阶段，若你的体力值小于上回合结束时的体力值，你可以将场上所有牌还原到你上一回合结束时的位置',
 		swd_xiuluo_info:'回合开始阶段，你可以弃一张手牌来弃置你判断区里的一张延时类锦囊（必须花色相同）',
 		xianyin_info:'出牌阶段，你可以令所有判定区内有牌的角色弃置判定区内的牌，然后交给你一张手牌',
 		qiaoxie_info:'每当你装备一张牌，可摸一张牌；每当你失去一张装备牌（不含替换），你可以弃置其他角色的一张牌',

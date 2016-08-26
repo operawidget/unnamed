@@ -3222,9 +3222,12 @@ character.hearth={
 		},
 		xianzhi:{
 			trigger:{global:'judgeBegin'},
-			direct:true,
+			frequent:true,
 			filter:function(){
 				return ui.cardPile.childNodes.length>1;
+			},
+			check:function(){
+				return false;
 			},
 			content:function(){
 				'step 0'
@@ -3243,7 +3246,6 @@ character.hearth={
 				};
 				'step 1'
 				if(result.control=='调换顺序'){
-					player.logSkill('xianzhi');
 					var card=ui.cardPile.firstChild;
 					ui.cardPile.removeChild(card);
 					ui.cardPile.insertBefore(card,ui.cardPile.firstChild.nextSibling);

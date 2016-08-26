@@ -922,6 +922,7 @@ character.ow={
                 !target.previous.hasSkill('bingqiang2')&&!target.previous.hasSkill('bingqiang5');
             },
             check:function(card){
+                if(ui.selected.cards.length) return 0;
                 var player=_status.event.player;
                 var max=0,min=0;
                 for(var i=0;i<game.players.length;i++){
