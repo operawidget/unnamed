@@ -55,9 +55,9 @@
 	};
 	var lib={
 		configprefix:'noname_0.9_',
-        versionOL:13,
-		versionURL:'https://rawgit.com/operawidget/unnamed/master/game/game.js',
-        updateURL:'https://rawgit.com/operawidget/unnamed/master/',
+        versionOL:14,
+        sourceURL:'https://rawgit.com/operawidget/unnamed/$version$/',
+        updateURL:'https://raw.githubusercontent.com/operawidget/unnamed/$version$/',
 		assetURL:'',
         hallURL:'websha.cn',
         reserveSkillName:['others','zhu','zhuSkill'],
@@ -3642,7 +3642,7 @@
                         }
                     };
                     game.download=function(url,folder,onsuccess,onerror){
-                        url=lib.updateURL+url;
+                        url=get.url()+url;
                         game.print(url);
                         var dir=folder.split('/');
                         var str='';
@@ -3760,7 +3760,7 @@
 						}
 						game.download=function(url,folder,onsuccess,onerror){
 							var fileTransfer = new FileTransfer();
-							url=lib.updateURL+url;
+							url=get.url()+url;
 							folder=lib.assetURL+folder;
 							fileTransfer.download(encodeURI(url),encodeURI(folder),onsuccess,onerror);
 						};
@@ -15869,9 +15869,6 @@
 			}
 		},
         multiDownload:function(list,onsuccess,onerror,onfinish,process,dev){
-            if(lib.updateURL[lib.updateURL.length-1]!='/'){
-                lib.updateURL+='/';
-            }
             list=list.slice(0);
             var download=function(){
                 if(list.length){
@@ -24938,7 +24935,7 @@
                                 toremove[i].remove();
                             }
                             var loading=ui.create.div('.loading.config.toggle','载入中...',page);
-                            var script=lib.init.js(lib.updateURL,'web/list',function(){
+                            var script=lib.init.js(lib.hallURL,'web/list',function(){
                                 loading.remove();
                                 script.remove();
                                 var list=window.noname_extension_list;
@@ -25055,14 +25052,8 @@
     					var ul=document.createElement('ul');
     					var li1=document.createElement('li');
                         var li2=document.createElement('li');
-    					var li3=document.createElement('li');
     					li1.innerHTML='游戏版本：'+lib.version+'<p style="margin-top:8px;white-space:nowrap"></p>';
     					li2.innerHTML='素材版本：'+(lib.config.asset_version||'无')+'<p style="margin-top:8px"></p>';
-                        li3.innerHTML='更新源<br><p style="margin-top:8px"><input type="text" style="width:120px" value="'+lib.updateURL+'"><button style="margin-left:5px">确定</button></p>';
-                        li3.querySelector('button').onclick=function(){
-                            lib.updateURL=this.previousSibling.value;
-                            localStorage.setItem('noname_update_url',lib.updateURL);
-                        }
 
     					var button1,button2,button3;
                         var span1,includeskin;
@@ -25090,7 +25081,8 @@
 
     							var goupdate=function(files,update){
     								if(game.download){
-    									var script=lib.init.js(lib.updateURL,'game/source',function(){
+                                        lib.version=update.version;
+    									var script=lib.init.js(get.url('source'),'game/source',function(){
     										script.remove();
     										var updates=window.noname_source_list;
     										delete window.noname_source_list;
@@ -25160,7 +25152,7 @@
     							};
 
 
-    							var script=lib.init.js(lib.updateURL,'game/update',function(){
+    							var script=lib.init.js(get.url('version'),'game/update',function(){
     								button1.disabled=false;
     								button1.innerHTML='检查游戏更新';
                                     button3.disabled=false;
@@ -25181,7 +25173,7 @@
                                             files=update.files.global.concat(update.files[version]);
                                         }
                                         var str;
-                                        if(dev){
+                                        if(lib.config.dev){
                                             str='开发版仅供测试使用，可能存在风险，是否确定更新？'
                                         }
     									else{
@@ -25239,7 +25231,7 @@
     						else if(game.download){
     							button2.innerHTML='正在检查更新';
     							button2.disabled=true;
-    							var script=lib.init.js(lib.updateURL,'game/asset',function(){
+    							var script=lib.init.js(get.url('source'),'game/asset',function(){
     								script.remove();
     								var updates=window.noname_asset_list;
     								delete window.noname_asset_list;
@@ -25353,7 +25345,6 @@
 
     					ul.appendChild(li1);
                         ul.appendChild(li2);
-    					// ul.appendChild(li3);
     					page.appendChild(ul);
                     }());
 					(function(){
@@ -30411,6 +30402,22 @@
     			if(info.locked) return true;
     			return false;
     		},
+        },
+        url:function(tag){
+            if(lib.config.dev){
+                switch(tag){
+                    case 'version':return lib.sourceURL.replace(/\$version\$/,'master');
+                    case 'source':return lib.sourceURL.replace(/\$version\$/,'master');
+                    default:return lib.updateURL.replace(/\$version\$/,'master');
+                }
+            }
+            else{
+                switch(tag){
+                    case 'version':return lib.sourceURL.replace(/\$version\$/,'master');
+                    case 'source':return lib.sourceURL.replace(/\$version\$/,'v'+lib.version);
+                    default:return lib.updateURL.replace(/\$version\$/,'v'+lib.version);
+                }
+            }
         },
         round:function(num,f){
             var round=1;
