@@ -56,8 +56,8 @@
 	var lib={
 		configprefix:'noname_0.9_',
         versionOL:13,
-		updateURL:localStorage.getItem('noname_update_url')||'http://websha.cn/',
-        devURL:'https://rawgit.com/operawidget/unnamed/master/',
+		versionURL:'https://rawgit.com/operawidget/unnamed/master/game/game.js',
+        updateURL:'https://rawgit.com/operawidget/unnamed/master/',
 		assetURL:'',
         hallURL:'websha.cn',
         reserveSkillName:['others','zhu','zhuSkill'],
@@ -367,11 +367,11 @@
 						init:false,
 						unfrequent:true
 					},
-					cheat:{
+					dev:{
 						name:'开发者模式',
 						init:false,
 						onclick:function(bool){
-                            game.saveConfig('cheat',bool);
+                            game.saveConfig('dev',bool);
                             if(_status.connectMode) return;
 							if(bool){
                                 lib.cheat.i();
@@ -711,7 +711,7 @@
 					},
 					show_history:{
 						name:'出牌记录栏',
-						init:'left',
+						init:'right',
 						unfrequent:true,
 						item:{
 							off:'关闭',
@@ -3641,8 +3641,8 @@
                             require('electron').remote.getCurrentWindow().toggleDevTools();
                         }
                     };
-                    game.download=function(url,folder,onsuccess,onerror,dev){
-                        url=(dev?lib.devURL:lib.updateURL)+url;
+                    game.download=function(url,folder,onsuccess,onerror){
+                        url=lib.updateURL+url;
                         game.print(url);
                         var dir=folder.split('/');
                         var str='';
@@ -3758,9 +3758,9 @@
 								}
 							});
 						}
-						game.download=function(url,folder,onsuccess,onerror,dev){
+						game.download=function(url,folder,onsuccess,onerror){
 							var fileTransfer = new FileTransfer();
-							url=(dev?lib.devURL:lib.updateURL)+url;
+							url=lib.updateURL+url;
 							folder=lib.assetURL+folder;
 							fileTransfer.download(encodeURI(url),encodeURI(folder),onsuccess,onerror);
 						};
@@ -4193,7 +4193,7 @@
                     if(window.isNonameServer){
                         lib.cheat.i();
                     }
-					else if(lib.config.cheat&&!lib.storage.test&&(!_status.connectMode||lib.config.debug)){
+					else if(lib.config.dev&&!lib.storage.test&&(!_status.connectMode||lib.config.debug)){
                         lib.cheat.i();
                     }
 					lib.config.sort_card=get.sortCard(lib.config.sort);
@@ -25090,7 +25090,7 @@
 
     							var goupdate=function(files,update){
     								if(game.download){
-    									var script=lib.init.js(dev?lib.devURL:lib.updateURL,'game/source',function(){
+    									var script=lib.init.js(lib.updateURL,'game/source',function(){
     										script.remove();
     										var updates=window.noname_source_list;
     										delete window.noname_source_list;
@@ -25160,7 +25160,7 @@
     							};
 
 
-    							var script=lib.init.js(dev?lib.devURL:lib.updateURL,'game/update',function(){
+    							var script=lib.init.js(lib.updateURL,'game/update',function(){
     								button1.disabled=false;
     								button1.innerHTML='检查游戏更新';
                                     button3.disabled=false;
@@ -25172,24 +25172,11 @@
                                         if(update.version==lib.config.check_version){
                                             return;
                                         }
-                                        if(update.version.indexOf('beta')!=-1){
-                                            return;
-                                        }
     								}
     								game.saveConfig('check_version',update.version);
-                                    var bool;
-                                    if(update.version.indexOf('beta')!=-1){
-                                        bool=lib.config.debug;
-                                    }
-                                    else{
-                                        bool=(update.version!=lib.version);
-                                    }
-    								if(bool||dev){
+    								if(update.version!=lib.version||lib.config.dev){
                                         var files;
                                         var version=lib.version;
-                                        if(version.indexOf('beta')!=-1){
-                                            version=version.slice(0,version.indexOf('beta'));
-                                        }
                                         if(update.files&&update.files[version]){
                                             files=update.files.global.concat(update.files[version]);
                                         }
@@ -25338,7 +25325,7 @@
     					button3.onclick=function(){
                             game.checkForUpdate(null,true);
                         };
-    					if(lib.config.cheat){
+    					if(false){
                             li1.lastChild.appendChild(button3);
                         }
 
@@ -25366,7 +25353,7 @@
 
     					ul.appendChild(li1);
                         ul.appendChild(li2);
-    					ul.appendChild(li3);
+    					// ul.appendChild(li3);
     					page.appendChild(ul);
                     }());
 					(function(){

@@ -384,7 +384,8 @@ mode.brawl={
                 var player;
                 if(init){
                     player=ui.create.player(null,true);
-                    player.init('boss_lvbu2');
+                    player.node.avatar.show();
+                    player.node.avatar.setBackground('boss_lvbu2','character');
                     player.style.left='calc(50% - 75px)';
                     player.style.top='20px';
                     player.node.count.remove();
@@ -400,9 +401,21 @@ mode.brawl={
                 var num2=0;
                 this.showcaseinterval=setInterval(function(){
                     var dx,dy
-                    if(num2%3==0){
-                        player.animate('target');
-                        player.animate('zoomin');
+                    if(num2%5==0){
+                        // player.animate('target');
+                        // player.animate('zoomin');
+                        player.classList.add('zoomin3');
+                        player.hide();
+                        setTimeout(function(){
+                            player.style.transitionProperty='none';
+                            player.classList.remove('zoomin3');
+                            player.classList.add('zoomout2');
+                            setTimeout(function(){
+                                player.style.transitionProperty='';
+                                player.classList.remove('zoomout2');
+                                player.show();
+                            },500);
+                        },700);
                     }
                     num2++;
                     switch(num++){

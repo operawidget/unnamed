@@ -5,6 +5,7 @@ window.noname_update={
         '显示时间选项',
         '历史记录栏',
         '自定义背景音乐',
+        '更新源调整',
     ],
     files:{
         global:[
