@@ -10322,7 +10322,7 @@
                     if(typeof proceed=='function') proceed();
                     else if(_status.paused&&!noresume) game.resume();
                 },
-				logSkill:function(name,targets,nature){
+				logSkill:function(name,targets,nature,logv){
 					if(get.itemtype(targets)=='player') targets=[targets];
 					var nopop=false;
 					if(Array.isArray(name)){
@@ -10359,7 +10359,12 @@
 					if(game.chess){
 						this.chessFocus();
 					}
-                    if(info.logv!==false) game.logv(this,name,targets);
+                    if(logv===true){
+                        game.logv(this,name,targets,null,true);
+                    }
+                    else if(info.logv!==false){
+                        game.logv(this,name,targets);
+                    }
 				},
 				unprompt:function(){
 					if(this.node.prompt){

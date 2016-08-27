@@ -401,6 +401,7 @@ character.swd={
 		guozao:{
 			trigger:{global:'damageEnd'},
 			forced:true,
+			logv:false,
 			check:function(event,player){
 				for(var i=0;i<game.players.length;i++){
 					if(ai.get.attitude(player,game.players[i])>2&&game.players[i].num('h')==1){
@@ -467,7 +468,7 @@ character.swd={
 				"step 1"
 				if(result.bool&&result.targets[0]){
 					var target=result.targets[0];
-					player.logSkill('guozao',target);
+					player.logSkill('guozao',target,'green',true);
 					var cards=target.get('h');
 					target.lose(cards)._triggered=null;
 					game.log(target,'弃置了',cards,'，并获得三张牌');
