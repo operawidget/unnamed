@@ -19437,10 +19437,16 @@
             if(!_status.video&&!game.online){
                 var logvid=_status.event.getParent().logvid;
                 if(!logvid){
-                    logvid=_status.event.getParent(2).logvid;
+                    logvid=_status.event.getParent(2);
+                    if(logvid){
+                        logvid=logvid.logvid;
+                    }
                 }
                 if(!logvid){
-                    logvid=_status.event.getParent(3).logvid;
+                    logvid=_status.event.getParent(3);
+                    if(logvid){
+                        logvid=logvid.logvid;
+                    }
                 }
                 if(logvid){
                     game.logv(logvid,'<div class="text center">'+str+'</div>');

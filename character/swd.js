@@ -1819,7 +1819,7 @@ character.swd={
 				}
 				var dialog=ui.create.dialog('极略：选择一张基本牌或锦囊牌牌使用',cards);
 				var trigger=event.parent.parent;
-				player.chooseButton(dialog,function(){return 1}).filterButton=function(button){
+				player.chooseButton(dialog,function(card){if(card.name=='du') return 0;return 1}).filterButton=function(button){
 					var type=get.type(button.link,'trick');
 					return (type=='trick'||type=='basic')&&trigger.filterCard(button.link,player,trigger);
 				};
@@ -2418,12 +2418,12 @@ character.swd={
 		dangping2:{},
 		duishi:{
 			enable:'phaseUse',
-			usable:2,
+			usable:1,
 			filter:function(event,player){
-				return player.num('h')>0&&!player.hasSkill('duishi3');
+				return player.num('h')>0;
 			},
 			filterTarget:function(card,player,target){
-				return player!=target&&target.num('h')&&!target.hasSkill('duishi2');
+				return player!=target&&target.num('h')>0;
 			},
 			filterCard:true,
 			check:function(card){return 8-ai.get.value(card)},
@@ -2431,22 +2431,19 @@ character.swd={
 				"step 0"
 				var suit=get.suit(cards[0]);
 				target.chooseToDiscard({suit:suit},'h','弃置一张'+get.translation(suit)+
-					'牌，或令'+get.translation(player)+'获得你的一张牌').ai=function(card){
-					if(ai.get.attitude(target,player)>0){
-						return -1;
-					}
-					return 11-ai.get.value(card);
+					'牌并令'+get.translation(player)+'摸一张牌，或随机弃置两张牌').ai=function(card){
+					return 8-ai.get.value(card);
 				}
 
 				"step 1"
-				if(!result.bool){
-					player.addTempSkill('duishi3','phaseAfter');
-					if(target.num('he')){
-						player.gainPlayerCard(target,'he',true,ai.get.buttonValue);
-					}
+				if(result.bool){
+					player.draw();
 				}
 				else{
-					target.addTempSkill('duishi2','phaseAfter');
+					var he=target.get('he');
+					if(he.length){
+						target.discard(he.randomGets(2));
+					}
 				}
 			},
 			ai:{
@@ -7860,7 +7857,7 @@ character.swd={
 		guisi:'归思',
 		guisi_info:'每当你成为杀的目标，你可以交给对方一张手牌并取消之',
 		duishi:'对诗',
-		duishi_info:'出牌阶段，你可以弃置一张手牌，并指定一名有手牌的角色弃置一张与之花色相同的手牌，否则你获得其一张牌。若其弃置了手牌，你可对一名其他目标再发动一次',
+		duishi_info:'出牌阶段限一次，你可以弃置一张手牌，并指定一名有手牌的角色选择一项：弃置一张与之花色相同的手牌并令你摸一张牌，或随机弃置两张牌',
 		anlianying:'连营',
 		anlianying_info:'每当你失去最后一张手牌，可摸两张牌',
 		lianwu:'连舞',

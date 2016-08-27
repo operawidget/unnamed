@@ -20,12 +20,61 @@ character.ow={
         ow_tuobiang:['male','shu',3,['paotai','maoding']],
         // ow_baolei:['female','shu',3,[]],
         ow_banzang:['male','qun',4,['fengshi','yinbo']],
-        // ow_laiyinhate:['male','shu',4,[]],
+        ow_laiyinhate:['male','qun',4,['lzhongjia','mengji']],
         // ow_luba:['male','shu',4,[]],
         // ow_wensidun:['male','shu',4,[]],
-        // ow_zhaliya:['female','shu',4,[]],
+        // ow_zhaliya:['female','shu',4,['pingzhang','lichang']],
     },
     skill:{
+        mengji:{
+            trigger:{source:'damageBegin'},
+            forced:true,
+            filter:function(event,player){
+                return !player.hujia&&event.card&&event.card.name=='sha'&&event.notLink();
+            },
+            content:function(){
+                trigger.num++;
+            }
+        },
+        lzhongjia:{
+            init2:function(player){
+                if(!player.storage.zhongjia){
+                    player.changeHujia(8);
+                    player.storage.zhongjia=true;
+                }
+            },
+            enable:'phaseUse',
+            usable:1,
+            filter:function(event,player){
+                return player.hujia>0;
+            },
+            filterTarget:function(card,player,target){
+                return !target.hujia;
+            },
+            filterCard:true,
+            position:'he',
+            check:function(card){
+                for(var i=0;i<game.players.length;i++){
+                    if(game.players[i].hp==1&&ai.get.attitude(player,game.players[i])>2){
+                        return 7-ai.get.value(card);
+                    }
+                }
+                return 5-ai.get.value(card);
+            },
+            content:function(){
+                player.changeHujia(-1);
+                target.changeHujia();
+            },
+            ai:{
+                order:5,
+                expose:0.2,
+                return:{
+                    target:function(player,target){
+                        return 1/Math.max(1,target.hp);
+                    }
+                }
+            }
+        },
         maoding:{
             trigger:{player:'damageEnd',source:'damageEnd'},
             frequent:true,
@@ -2518,6 +2567,10 @@ character.ow={
         }
     },
     translate:{
+        mengji:'猛击',
+        mengji_info:'锁定技，当你没有护甲时，你的杀造成的伤害+1',
+        lzhongjia:'重甲',
+        lzhongjia_info:'游戏开始时，你获得8点护甲；出牌阶段限一次，你可以弃置一张牌并将一点护甲分给一名没有护甲的其他角色',
         paotai:'炮台',
         paotai2:'炮台',
         paotai_info:'出牌阶段，你可以弃置一张杀布置或升级一个炮台（最高3级）；回合结束阶段，炮台有一定机率对一名随机敌人造成一点火焰伤害；每当你受到杀造成的伤害，炮台降低一级',
