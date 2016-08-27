@@ -2381,6 +2381,10 @@ character.hearth={
 				if(lib.config.animation&&!lib.config.low_performance){
 					player.$thunder();
 				}
+				if(!event.parent.parent.bingshi_logv){
+					event.parent.parent.bingshi_logv=true;
+					game.logv(trigger.player,'bingshi',game.players.slice(0),event.parent.parent);
+				}
 			}
 		},
 		huanwu:{

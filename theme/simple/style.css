@@ -118,7 +118,7 @@ body{
 }
 
 .menupaused{
-	opacity: 0.3;
+	opacity: 0.3 !important;
 }
 
 .fire{

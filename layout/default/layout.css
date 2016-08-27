@@ -50,16 +50,18 @@ table{table-layout: fixed;}
 #window.noclick_important .noclick_click_important div{pointer-events: auto !important}
 
 #window.blur_ui #arena.paused,
-#window.blur_ui #arena.unfocus,
-#window.blur_ui #arena.right,
 #window.blur_ui #arena.menupaused,
 #window.blur_ui #historybar.paused,
+#window.blur_ui #historybar.menupaused,
+#window.blur_ui #arena.unfocus,
+#window.blur_ui #arena.right,
 #window.blur_ui.shortcutpaused>#arena,
 #window.blur_ui.shortcutpaused>#historybar{
     filter:blur(3px);
     -webkit-filter:blur(3px);
 }
-#window.blur_ui #arena.menupaused{
+#window.blur_ui #arena.menupaused,
+#window.blur_ui #historybar.menupaused{
     opacity: 0.6;
 }
 #window.blur_ui #arena.thrownhighlight>.card.thrown:not(.thrownhighlight){
@@ -338,6 +340,9 @@ table{table-layout: fixed;}
 	z-index: 2;
 	transition-property: opacity,visibility;
 }
+#historybar.hidden{
+	pointer-events: none;
+}
 #historybar>div{
 	width: 42px;
 	height: 42px;
@@ -345,6 +350,8 @@ table{table-layout: fixed;}
 	padding: 4px;
 	display: block;
 	position: relative;
+}
+#historybar>div:not(.nozoom){
 	animation: history_start 0.5s;
 	-webkit-animation: history_start 0.5s;
 }
@@ -378,15 +385,21 @@ table{table-layout: fixed;}
     text-align: center;
     width: 100%;
 }
+#historybar>div>.avatar>.avatarbg{
+	bottom: 0;
+	height: 100%;
+	background-size: cover;
+}
 #historybar>div>.avatar2{
 	width: 20px;
     height: 20px;
     left: 28px;
     top: 28px;
-    border-radius: 4px;
+    border-radius: 100%;
 	font-family: 'xinwei';
 	font-size: 20px;
 	line-height: 20px;
+	z-index: 1;
 }
 #window.rightbar #historybar,
 #window.rightbar2:not(.leftbar) #historybar{
@@ -1019,7 +1032,7 @@ margin-bottom: 5px;
 	-webkit-animation:replaceenemy 0.5s
 }
 .player>div{z-index: 2;}
-.player.dead,.player.likedead{z-index: 1;
+.player.dead,.player.likedead,.grayscale1{z-index: 1;
 	filter:grayscale(1);
 	-webkit-filter:grayscale(1);
 }

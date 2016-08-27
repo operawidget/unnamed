@@ -721,6 +721,7 @@
 						onclick:function(bool){
                             if(lib.config.show_history=='right') ui.window.animate('rightbar2');
 							game.saveConfig('show_history',bool);
+                            if(_status.video||!_status.gameStarted) return;
                             if(bool=='left'){
                                 ui.window.classList.add('leftbar');
                                 ui.window.classList.remove('rightbar');
@@ -6985,7 +6986,6 @@
 							game.log(player,str,card);
 						}
                         if(card.name=='wuxie'){
-                            //目标 卡牌 国战暗将 find project号位
                             game.logv(player,[card,cards],[event.getTrigger().card]);
                         }
                         else{
@@ -7189,7 +7189,7 @@
 					str+='发动了';
 					if(!info.direct){
 						game.log(player,str,'【'+get.skillTranslation(skill,player)+'】');
-                        game.logv(player,skill,targets);
+                        if(info.logv!==false) game.logv(player,skill,targets);
 						if(lib.config.skill_animation&&lib.skill[skill]&&lib.skill[skill].skillAnimation){
 							player.$skill(lib.skill[skill].animationStr||lib.translate[skill],lib.skill[skill].skillAnimation,lib.skill[skill].animationColor);
 						}
@@ -7868,7 +7868,8 @@
 					if(player.hp<=0) player.die(event.reason);
 				},
 				die:function(){
-					if(source){
+                    game.logv(player,'die',source);
+					if(source&&source!=player){
 						game.log(player,'被',source,'杀害');
 						if(source.stat[source.stat.length-1].kill==undefined){
 							source.stat[source.stat.length-1].kill=1;
@@ -7878,7 +7879,7 @@
 						}
 					}
 					else{
-						game.log(player,'遇难')
+						game.log(player,'阵亡')
 					}
 					event.cards=player.get('hej');
 					event.playerCards=player.get('he');
@@ -10347,7 +10348,8 @@
 						}
 						this.line(targets,nature);
 					}
-					if(lib.skill[name]&&lib.skill[name].ai&&lib.skill[name].ai.expose!=undefined&&this.logAi){
+                    var info=lib.skill[name];
+					if(info&&info.ai&&info.ai.expose!=undefined&&this.logAi){
 						this.logAi(lib.skill[name].ai.expose);
 					}
 					if(this.checkShow){
@@ -10357,7 +10359,7 @@
 					if(game.chess){
 						this.chessFocus();
 					}
-                    game.logv(this,name,targets);
+                    if(info.logv!==false) game.logv(this,name,targets);
 				},
 				unprompt:function(){
 					if(this.node.prompt){
@@ -12978,10 +12980,10 @@
                 trigger:function(name){
                     if(_status.video) return;
                     if(name=='gameStart'){
-                        _status.gameStarted=true;
                         if(_status.brawl&&_status.brawl.gameStart){
                             _status.brawl.gameStart();
                         }
+                        game.showHistory();
                     }
                     if(!lib.hookmap[name]) return;
                     var event=this;
@@ -13071,7 +13073,7 @@
 				triggerx:function(name){
 					if(_status.video) return;
                     if(name=='gameStart'){
-                        _status.gameStarted=true;
+                        game.showHistory();
                     }
 					var event=this;
 					var i,j,iwhile,next,add;
@@ -14735,7 +14737,7 @@
                         }
                         game.loop();
                         game.send('reinited');
-                        _status.gameStarted=true;
+                        game.showHistory();
                         if(!observe&&game.me&&game.me.isDead()){
                             ui.exit=ui.create.control('退出联机',ui.click.exit);
                         }
@@ -14813,7 +14815,7 @@
                     if(lib.config.show_cardpile){
                         ui.cardPileButton.style.display='';
                     }
-                    _status.gameStarted=true;
+                    game.showHistory();
                 },
                 updateWaiting:function(map){
                     if(!game.connectPlayers) return;
@@ -14863,6 +14865,15 @@
 	var game={
         online:false,
         onlineID:null,
+        showHistory:function(){
+            _status.gameStarted=true;
+            if(lib.config.show_history=='left'){
+                ui.window.classList.add('leftbar');
+            }
+            else if(lib.config.show_history=='right'){
+                ui.window.classList.add('rightbar');
+            }
+        },
         createBackground:function(src,blur){
             var current=document.body.querySelector('.background.upper');
             if(current){
@@ -15902,6 +15913,9 @@
 			ui.system.hide();
 			ui.arena.style.display='none';
 			ui.arena.hide();
+            ui.window.classList.remove('leftbar');
+            ui.window.classList.remove('rightbar');
+            ui.historybar.style.display='none';
 			_status.event=next;
 			_status.paused=false;
 			_status.paused2=false;
@@ -19418,15 +19432,17 @@
             game.broadcast(function(str){
                 game.log(str);
             },str);
-            var logvid=_status.event.getParent().logvid;
-            if(!logvid){
-                logvid=_status.event.getParent(2).logvid;
-            }
-            if(!logvid){
-                logvid=_status.event.getParent(3).logvid;
-            }
-            if(logvid){
-                game.logv(logvid,'<div class="text center">'+str+'</div>');
+            if(!_status.video&&!game.online){
+                var logvid=_status.event.getParent().logvid;
+                if(!logvid){
+                    logvid=_status.event.getParent(2).logvid;
+                }
+                if(!logvid){
+                    logvid=_status.event.getParent(3).logvid;
+                }
+                if(logvid){
+                    game.logv(logvid,'<div class="text center">'+str+'</div>');
+                }
             }
 			if(lib.config.title) document.title=str;
 			if(lib.config.show_log!='off'&&!game.chess){
@@ -19456,12 +19472,16 @@
                 }
 			}
 		},
-        logv:function(player,card,targets){
+        logv:function(player,card,targets,event,forced,logvid){
             var node=ui.create.div();
+            logvid=logvid||get.id();
             if(!player){
                 player=_status.event.getParent().logvid;
                 if(!player) return;
             }
+            game.broadcast(function(player,card,targets,event,forced,logvid){
+                game.logv(player,card,targets,event,forced,logvid);
+            },player,card,targets,event,forced,logvid);
             if(typeof player=='string'){
                 for(var i=0;i<ui.historybar.childElementCount;i++){
                     if(ui.historybar.childNodes[i].logvid==player){
@@ -19471,7 +19491,10 @@
                 return;
             }
             if(typeof card=='string'){
-                if(lib.skill[card]&&lib.skill[card].logv===false) return;
+                if(card!='die'){
+                    if(lib.skill[card]&&lib.skill[card].logv===false&&!forced) return;
+                    if(!lib.translate[card]) return;
+                }
                 var avatar;
                 if(!player.classList.contains('unseen')){
                     avatar=player.node.avatar.cloneNode();
@@ -19482,10 +19505,42 @@
                 else{
                     return;
                 }
-                ui.create.div('',get.translation(card,'skill'),avatar).dataset.nature='water';
-                node.skill=card;
+                avatar.style.transform='';
                 avatar.className='avatar';
+                if(card=='die'){
+                    node.dead=true;
+                    node.player=player;
+                    var avatar2=avatar.cloneNode();
+                    avatar2.className='avatarbg grayscale1';
+                    avatar.appendChild(avatar2);
+                    avatar.style.opacity=0.6;
+                }
+                else{
+                    ui.create.div('',get.translation(card,'skill'),avatar).dataset.nature='water';
+                    node.skill=card;
+                }
                 node.appendChild(avatar);
+                if(card=='die'&&targets&&targets!=player){
+                    node.source=targets;
+                    var avatar;
+                    player=targets;
+                    if(!player.classList.contains('unseen')){
+                        avatar=player.node.avatar.cloneNode();
+                    }
+                    else if(!player.classList.contains('unseen2')){
+                        avatar=player.node.avatar2.cloneNode();
+                    }
+                    else if(get.mode()=='guozhan'&&player.node&&player.node.name_seat){
+                        avatar=ui.create.div('.avatar.cardbg');
+                        avatar.innerHTML=player.node.name_seat.innerHTML[0];
+                    }
+                    else{
+                        return;
+                    }
+                    avatar.style.transform='';
+                    avatar.classList.add('avatar2');
+                    node.appendChild(avatar);
+                }
             }
             else if(Array.isArray(card)){
                 node.cards=card[1];
@@ -19526,6 +19581,7 @@
                 else{
                     return;
                 }
+                avatar.style.transform='';
                 avatar.classList.add('avatar2');
                 node.appendChild(avatar);
             }
@@ -19537,6 +19593,9 @@
                     node.targets=targets;
                 }
             }
+            if(lib.config.low_performance||ui.historybar.scrollTop>0){
+                node.classList.add('nozoom');
+            }
             ui.historybar.insertBefore(node,ui.historybar.firstChild);
             if(ui.historybar.childElementCount>20){
                 ui.historybar.lastChild.remove();
@@ -19547,9 +19606,12 @@
             else{
                 node.addEventListener('mouseenter',ui.click.intro);
             }
-            node.logvid=get.id();
+            node.logvid=logvid;
             node.added=[];
-            _status.event.logvid=node.logvid;
+            if(!game.online){
+                event=event||_status.event;
+                event.logvid=node.logvid;
+            }
         },
 		putDB:function(type,id,item,callback){
 			if(!lib.db) return item;
@@ -20220,7 +20282,7 @@
     						game.onresume2();
     					}
                         ui.arena.classList.remove('menupaused');
-                        ui.historybar.classList.remove('paused');
+                        ui.historybar.classList.remove('menupaused');
     					ui.config2.classList.remove('pressdown2');
                     }
 				};
@@ -20399,7 +20461,7 @@
                         if(menuContainer.classList.contains('hidden')){
     						ui.config2.classList.add('pressdown2');
     						ui.arena.classList.add('menupaused');
-    						ui.historybar.classList.add('paused');
+    						ui.historybar.classList.add('menupaused');
                             menuContainer.classList.remove('hidden');
     						for(var i=0;i<menuUpdates.length;i++){
     							menuUpdates[i]();
@@ -26959,12 +27021,6 @@
 				else{
 					ui.arenalog.dataset.position=lib.config.show_log;
 				}
-                if(lib.config.show_history=='left'){
-                    ui.window.classList.add('leftbar');
-                }
-                else if(lib.config.show_history=='right'){
-                    ui.window.classList.add('rightbar');
-                }
                 ui.historybar=ui.create.div('#historybar.shadowed',ui.window);
                 lib.setScroll(ui.historybar);
 
@@ -29718,10 +29774,10 @@
 				if(this.classList.contains('player')&&!this.name){
 					return;
 				}
-                if(this.parentNode==ui.historybar&&!lib.config.touchscreen){
+                if(this.parentNode==ui.historybar){
                     if(ui.historybar.style.zIndex=='22'){
                         if(_status.removePop){
-                            _status.removePop();
+                            if(_status.removePop(this)==false) return;
                         }
                         else{
                             return;
@@ -29771,10 +29827,13 @@
                     ui.historybar.style.zIndex='';
 					if(!ui.arena.classList.contains('menupaused')) game.resume2();
 				};
-                _status.removePop=function(){
+                var currentpop=this;
+                _status.removePop=function(node){
+                    if(node==currentpop) return false;
                     layer.remove();
                     uiintro.delete();
                     delete _status.removePop;
+                    return true;
                 };
 				uiintro.addEventListener('mouseleave',clickintro);
 				uiintro.addEventListener('click',clickintro);
@@ -32147,7 +32206,16 @@
 				}
 			}
             else if(node.parentNode==ui.historybar){
-                // uiintro.add(get.translation(node.firstChild));
+                if(node.dead){
+                    if(!node.source||node.source==node.player){
+                        uiintro.add('<div class="text center">'+get.translation(node.player)+'阵亡</div>');
+                        uiintro.addSmall([node.player]);
+                    }
+                    else{
+                        uiintro.add('<div class="text center">'+get.translation(node.player)+'被'+get.translation(node.source)+'杀害</div>');
+                        uiintro.addSmall([node.source]);
+                    }
+                }
                 if(node.skill){
                     uiintro.add('<div class="text center">'+get.translation(node.skill,'skill')+'</div>');
                     uiintro._place_text=uiintro.add('<div class="text" style="display:inline">'+get.translation(node.skill,'info')+'</div>');
@@ -32156,7 +32224,7 @@
                     uiintro.add('<div class="text center">目标</div>');
                     uiintro.addSmall(node.targets);
                 }
-                if(node.players&&node.players.length){
+                if(node.players&&node.players.length>1){
                     uiintro.add('<div class="text center">使用者</div>');
                     uiintro.addSmall(node.players);
                 }
