@@ -54,6 +54,7 @@ character.ow={
             filterCard:true,
             position:'he',
             check:function(card){
+                var player=_status.event.player;
                 for(var i=0;i<game.players.length;i++){
                     if(game.players[i].hp==1&&ai.get.attitude(player,game.players[i])>2){
                         return 7-ai.get.value(card);
@@ -178,30 +179,32 @@ character.ow={
             }
         },
         fengshi:{
-            trigger:{player:'shaBefore'},
+            trigger:{player:'shaBegin'},
             forced:true,
-            filter:function(){
-                return Math.random()<0.2;
-            },
-            check:function(){
-                return false;
-            },
-            content:function(){
-                trigger.untrigger();
-                trigger.finish();
-            },
+			check:function(event,player){
+				return ai.get.attitude(player,event.target)<=0;
+			},
+			filter:function(event,player){
+				return Math.random()<0.2*get.cardCount(true,player);
+			},
+			content:function(){
+				trigger.directHit=true;
+			},
             mod:{
-                targetInRange:function(card){
-                    if(card.name=='sha') return true;
-                },
+                attackFrom:function(from,to,distance){
+                    return distance-get.cardCount(true,from);
+                }
             },
             group:'fengshi2'
         },
         fengshi2:{
             trigger:{source:'damageBegin'},
             forced:true,
-            filter:function(event){
-                return event.card&&event.card.name=='sha'&&Math.random()<0.5;
+			check:function(event,player){
+				return ai.get.attitude(player,event.target)<=0;
+			},
+            filter:function(event,player){
+                return event.card&&event.card.name=='sha'&&Math.random()<0.2*get.cardCount(true,player);
             },
             content:function(){
                 trigger.num++;
@@ -2579,7 +2582,7 @@ character.ow={
         maoding_info:'每当你造成或受到一次伤害，你可以获得一个零件；出牌限阶段限一次，你可以弃置两张零件牌令一名角色获得一点护甲',
         fengshi:'风矢',
         fengshi2:'风矢',
-        fengshi_info:'锁定技，你的杀无视距离；你的杀指定目标后有20%的概率失效；你的杀造成伤害后有50%的概率令伤害+1',
+        fengshi_info:'锁定技，在一合内每当你使用一张牌，你的攻击范围+1；你的杀增加20%的概率强制命中；你的杀造成伤害后增加20%的概率令伤害+1',
         yinbo:'音波',
         yinbo_info:'出牌阶段限一次，你可以弃置一张黑桃牌，然后随机弃置三名敌人各一张牌',
         liudan:'榴弹',

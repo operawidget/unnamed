@@ -1404,6 +1404,7 @@ card.swd={
 		},
 		_zhuquezhizhang:{
 			trigger:{player:'damageEnd'},
+			forced:true,
 			filter:function(event,player){
 				return event.source&&event.source.isAlive()&&player.num('h','zhuquezhizhang')>0;
 			},

@@ -1760,6 +1760,8 @@ character.hearth={
 			},
 			check:function(event,player){
 				if(event.card.name=='tiesuo') return false;
+				if(event.card.name=='jiu') return false;
+				if(event.card.name=='tianxianjiu') return false;
 				if(event.card.name=='toulianghuanzhu') return false;
 				return true;
 			},
@@ -3370,6 +3372,9 @@ character.hearth={
 				trigger.player.storage.mengun2=trigger.cards[0];
 				game.addVideo('storage',player,['mengun2',get.cardInfo(trigger.cards[0]),'card']);
 				trigger.player.addTempSkill('mengun2','phaseEnd');
+			},
+			ai:{
+				expose:0.2
 			}
 		},
 		mengun2:{
